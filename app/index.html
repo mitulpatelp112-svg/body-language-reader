@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Body-Language Reader — Live Demo</title>
+<style>
+  :root { --bg:#0e1116; --panel:#161b22; --line:#2a313c; --txt:#e6edf3; --mut:#8b949e;
+          --good:#3fb950; --warn:#d29922; --bad:#f85149; --accent:#58a6ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:12px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  .banner { background:#1f2733; border:1px solid var(--warn); color:#e3b341; font-size:12px;
+            padding:6px 10px; border-radius:6px; }
+  .wrap { display:grid; grid-template-columns: 1fr 380px; gap:16px; padding:16px; align-items:start; }
+  .stage { position:relative; background:#000; border-radius:10px; overflow:hidden; aspect-ratio:4/3; }
+  video, canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .panel h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 10px; }
+  .state { margin-bottom:12px; }
+  .state .row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px; }
+  .bar { height:7px; background:#222a35; border-radius:4px; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:var(--accent); }
+  .caveat { font-size:11px; color:var(--mut); margin-top:3px; }
+  .contrib { font-size:10px; color:#6e7681; margin-top:2px; }
+  .sig { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; border-bottom:1px solid #1d242e; }
+  .sig .nm { color:var(--txt); } .sig .v { color:var(--mut); font-variant-numeric:tabular-nums; }
+  .dim { display:flex; gap:10px; margin-bottom:12px; }
+  .dim div { flex:1; background:#10151c; border:1px solid var(--line); border-radius:6px; padding:6px 8px; text-align:center; }
+  .dim b { display:block; font-size:18px; }
+  .dim span { font-size:10px; color:var(--mut); text-transform:uppercase; }
+  button { background:var(--accent); color:#06121f; border:0; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer; }
+  button.sec { background:#21262d; color:var(--txt); border:1px solid var(--line); }
+  #status { font-size:12px; color:var(--mut); }
+  select { background:#10151c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:5px; }
+  .legend { font-size:11px; color:var(--mut); }
+  .pill { font-size:10px; padding:1px 6px; border-radius:10px; border:1px solid var(--line); }
+  .e-strong{color:var(--good)} .e-moderate{color:var(--accent)} .e-weak{color:var(--warn)} .e-folklore{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Body-Language Reader <span style="color:var(--mut);font-weight:400">· live demo</span></h1>
+  <div class="banner">Decision-support, not a verdict. Single cues are weak; outputs are probabilistic with caveats.</div>
+  <span id="quality" class="pill" style="margin-left:auto">tracking —</span>
+  <a href="./eval.html" class="pill" style="text-decoration:none;color:var(--accent);border-color:var(--accent)">Eval ▸</a>
+</header>
+
+<div class="wrap">
+  <div>
+    <div class="stage">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
+      <button id="start">Start camera</button>
+      <button id="calib" class="sec" disabled>Recalibrate baseline</button>
+      <button id="saveProf" class="sec">Save profile</button>
+      <button id="loadProf" class="sec">Load profile</button>
+      <label class="legend">Context:
+        <select id="ctx">
+          <option value="neutral">Neutral</option>
+          <option value="interview">Interview</option>
+          <option value="casual">Casual</option>
+          <option value="cold">Cold environment</option>
+        </select>
+      </label>
+      <label class="legend"><input type="checkbox" id="facs"> FACS backend</label>
+      <span id="backendStat" class="mut"></span>
+      <span id="status">idle</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel" style="margin-bottom:14px;">
+      <h2>Inferred state (soft-labels)</h2>
+      <div class="dim">
+        <div><b id="valence">0.0</b><span>Valence</span></div>
+        <div><b id="arousal">0.0</b><span>Arousal</span></div>
+        <div><b id="domin">0.0</b><span>Dominance</span></div>
+      </div>
+      <div id="primary" style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--accent)">—</div>
+      <div id="states"><div class="caveat">Waiting for camera…</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Active signals (measurement layer)</h2>
+      <div id="signals"><div class="caveat">—</div></div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

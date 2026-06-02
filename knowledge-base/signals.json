@@ -1,0 +1,597 @@
+{
+  "schema_version": "0.1",
+  "last_updated": "2026-06-01",
+  "description": "Knowledge base of nonverbal/paralinguistic signals for the body-language reader. Each signal links an OBJECTIVELY MEASURABLE observable to PROBABILISTIC interpretations. Interpretations always carry confidence, required context, and caveats. This file is the product's interpretation layer and must never output a single deterministic verdict.",
+
+  "legend": {
+    "ekman_category": {
+      "emblem": "Gesture with a direct verbal translation; culture-specific (e.g., thumbs-up). Source: Ekman & Friesen 1969.",
+      "illustrator": "Movement that accompanies/illustrates speech (e.g., beat gestures). Tied to speech, low standalone meaning.",
+      "affect_display": "Face/body expression of emotion. Real but variable across people/culture/context (Barrett 2019).",
+      "regulator": "Manages conversational flow (nods, gaze shifts, turn-taking cues).",
+      "adaptor": "Self- or object-manipulation (self-touch, fidget). Popularly tied to anxiety/deception but EVIDENCE IS WEAK (DePaulo 2003)."
+    },
+    "evidence_strength": {
+      "strong": "Replicated, peer-reviewed, holds across populations.",
+      "moderate": "Supported but context/culture dependent.",
+      "weak": "Popular claim, small/mixed studies, NOT reliable for decisions.",
+      "folklore": "Trade-book/pop-psych assertion with no empirical backing. Hypothesis only."
+    },
+    "inference_reliability": "1 (essentially folklore) .. 5 (well-supported). Mirrors resource-catalog.md.",
+    "prior_confidence": "Baseline P(state | signal) BEFORE fusing other modalities + context. Deliberately modest."
+  },
+
+  "global_rules": [
+    "Never emit a conclusion from a single signal. Require multi-signal constellations (Ekman 1969; cluster studies ~68% vs single-cue ~55%).",
+    "Distinguish communicative vs. non-communicative movement before interpreting (Wiener et al. 1972).",
+    "Always fuse scene/context; context alone adds +5-7% accuracy (EMOTIC 2020).",
+    "Prefer valence/arousal/dominance dimensions over hard emotion labels (AffectNet, EMOTIC).",
+    "Output soft-labels with confidence, not one verdict (AffectNet+ 2024).",
+    "Cultural/individual baseline required: calibrate against the person's own neutral baseline before flagging deviation.",
+    "Never produce deception/lie/intent verdicts; the science does not support it (DePaulo 2003). Surface observations, not judgments."
+  ],
+
+  "signals": [
+    {
+      "id": "face_smile_genuine",
+      "label": "Smile with eye-orbital activation (AU6+AU12, 'Duchenne')",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU6 (cheek raiser) + AU12 (lip corner puller) co-activation; MediaPipe face mesh for lip/cheek geometry",
+      "observable": "Lip corners raised AND cheeks raised with eye crinkle, sustained > ~0.5s",
+      "interpretations": [
+        {"state": "positive_affect / enjoyment", "prior_confidence": 0.55, "evidence": "moderate", "requires_context": ["not masking", "baseline known"], "caveats": "Duchenne markers can be posed; presence != felt emotion (Barrett 2019)."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969", "Barrett et al. 2019"]
+    },
+    {
+      "id": "face_brow_raise",
+      "label": "Inner+outer brow raise (AU1+AU2)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU1+AU2 intensity",
+      "observable": "Both brows raised, forehead horizontal lines",
+      "interpretations": [
+        {"state": "surprise", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["sudden onset", "co-occurs with jaw drop AU26"], "caveats": "Also used as conversational emphasis (illustrator) or greeting — not always emotion."},
+        {"state": "interest / attention", "prior_confidence": 0.25, "evidence": "weak", "requires_context": ["speech listening"], "caveats": "Highly ambiguous alone."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_brow_lower",
+      "label": "Brow lowerer (AU4)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU4 intensity",
+      "observable": "Brows drawn down/together, vertical glabellar lines",
+      "interpretations": [
+        {"state": "concentration / cognitive_effort", "prior_confidence": 0.35, "evidence": "moderate", "requires_context": ["task engagement"], "caveats": "Frequently mistaken for anger."},
+        {"state": "negative_affect (anger/confusion)", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["co-AUs", "prosody negative"], "caveats": "AU4 alone is non-diagnostic."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969", "Barrett et al. 2019"]
+    },
+    {
+      "id": "face_mouth_frown",
+      "label": "Lip-corner depressor (AU15)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU15 / MediaPipe blendshapes mouthFrownLeft+mouthFrownRight",
+      "observable": "Lip corners pulled downward vs baseline",
+      "interpretations": [
+        {"state": "sadness / displeasure", "prior_confidence": 0.45, "evidence": "moderate", "requires_context": ["baseline deviation", "co-occurs with AU1+AU4 for sadness"], "caveats": "Brief depressor can be momentary; corroborate with brow and voice."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969", "AffectNet 2017"]
+    },
+    {
+      "id": "face_eye_widen",
+      "label": "Upper-lid raiser / eye widen (AU5)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU5 / blendshapes eyeWideLeft+eyeWideRight",
+      "observable": "Visible sclera increased above upper iris; lids raised",
+      "interpretations": [
+        {"state": "fear / heightened_alertness", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["co-occurs with AU1+2+20 for fear", "sudden onset"], "caveats": "Also surprise, bright light, or simple attention. Ambiguous alone."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969", "Barrett et al. 2019"]
+    },
+    {
+      "id": "face_nose_wrinkle",
+      "label": "Nose wrinkler / upper-lip raiser (AU9/AU10)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU9/AU10 / blendshapes noseSneer + mouthUpperUp",
+      "observable": "Nose wrinkled, upper lip raised, nasolabial deepening",
+      "interpretations": [
+        {"state": "disgust", "prior_confidence": 0.5, "evidence": "moderate", "requires_context": ["baseline deviation"], "caveats": "Disgust is among the more reliably recognized expressions, but AU9 can also signal general dislike/contempt."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969", "AffectNet 2017"]
+    },
+    {
+      "id": "face_lip_press",
+      "label": "Lip press / lip stretch (AU23/AU24/AU20)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU23/24 / blendshapes mouthPress + mouthStretch",
+      "observable": "Lips pressed/tightened or stretched horizontally vs baseline",
+      "interpretations": [
+        {"state": "tension / suppressed_negative", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation", "negative co-signals"], "caveats": "Also physical effort or concentration. NOT a deception cue."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969", "DePaulo et al. 2003"]
+    },
+    {
+      "id": "face_jaw_drop",
+      "label": "Jaw drop (AU26)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "OpenFace AU26 / blendshape jawOpen",
+      "observable": "Jaw lowered, mouth opens, not speaking",
+      "interpretations": [
+        {"state": "surprise", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["co-occurs with AU1+AU2 brow raise", "sudden onset"], "caveats": "Discount while the person is talking/yawning."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_lip_pucker",
+      "label": "Lip pucker / funneler (AU18/AU22)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "blendshapes mouthPucker + mouthFunnel",
+      "observable": "Lips pursed/pushed forward vs baseline",
+      "interpretations": [
+        {"state": "disapproval / skepticism (pursed)", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["not speaking"], "caveats": "Also a speech shape or thinking gesture."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_lip_suck",
+      "label": "Lip suck / bite (AU28)",
+      "ekman_category": "adaptor",
+      "modality": ["facial"],
+      "measurable_via": "blendshapes mouthRollLower + mouthRollUpper",
+      "observable": "Lips drawn inward / bitten",
+      "interpretations": [
+        {"state": "concentration / anxiety (lip bite)", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation"], "caveats": "Habitual for many; not a deception cue."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969", "DePaulo et al. 2003"]
+    },
+    {
+      "id": "face_chin_raise",
+      "label": "Chin raiser (AU17)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "blendshapes mouthShrugUpper + mouthShrugLower",
+      "observable": "Chin boss raised, lower lip pushed up (pout)",
+      "interpretations": [
+        {"state": "doubt / displeasure (pout)", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["co-occurs with AU15 for sadness"], "caveats": "Component of sadness; weak alone."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_smirk",
+      "label": "Asymmetric smile / dimpler (AU12+AU14 unilateral)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "blendshape asymmetry |mouthSmileLeft - mouthSmileRight| + mouthDimple",
+      "observable": "One-sided lip-corner pull / dimple",
+      "interpretations": [
+        {"state": "contempt / smugness", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["unilateral"], "caveats": "Unilateral lip action is the classic contempt marker, but also irony/playfulness."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_jaw_jut",
+      "label": "Jaw thrust (AU29)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "blendshape jawForward",
+      "observable": "Jaw pushed forward vs baseline",
+      "interpretations": [
+        {"state": "tension / defiance", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation"], "caveats": "Also bite alignment / habit."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_cheek_puff",
+      "label": "Cheek puff (AU33/34)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "blendshape cheekPuff",
+      "observable": "Cheeks inflated, breath held/released",
+      "interpretations": [
+        {"state": "exasperation / relief (sigh)", "prior_confidence": 0.3, "evidence": "weak", "requires_context": [], "caveats": "Also physical exertion / blowing."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "face_blink_rate",
+      "label": "Elevated blink rate (AU45 frequency)",
+      "ekman_category": "affect_display",
+      "modality": ["facial", "subtle_movement"],
+      "measurable_via": "blendshape eyeBlink edge-count over a 6s window",
+      "observable": "Blink frequency above personal baseline (~0.3-0.4 Hz resting)",
+      "interpretations": [
+        {"state": "elevated_arousal / stress", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation"], "caveats": "Dry eyes, screens, contacts raise blink rate too. Very LOW rate suggests concentration."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["affective computing literature"]
+    },
+    {
+      "id": "emotion_happiness",
+      "label": "Happiness prototype (AU6+AU12)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: cheek raiser (AU6) + lip-corner puller (AU12)",
+      "observable": "Smile with genuine eye-orbital involvement",
+      "interpretations": [
+        {"state": "happiness", "prior_confidence": 0.7, "evidence": "moderate", "prototype": true, "requires_context": [], "caveats": "Constellation beats single AUs, but smiles can still be posed/social (Barrett 2019)."}
+      ],
+      "inference_reliability": 4,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)", "AffectNet 2017"]
+    },
+    {
+      "id": "emotion_sadness",
+      "label": "Sadness prototype (AU1+AU4+AU15+AU17)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: inner brow raise + brow lower + lip-corner depress + chin raise",
+      "observable": "Oblique brows, downturned mouth, raised chin",
+      "interpretations": [
+        {"state": "sadness", "prior_confidence": 0.6, "evidence": "moderate", "prototype": true, "requires_context": [], "caveats": "Often brief; corroborate with voice/posture."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)"]
+    },
+    {
+      "id": "emotion_surprise",
+      "label": "Surprise prototype (AU1+AU2+AU5+AU26)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: full brow raise + upper-lid raise + jaw drop",
+      "observable": "Raised brows, wide eyes, dropped jaw",
+      "interpretations": [
+        {"state": "surprise", "prior_confidence": 0.6, "evidence": "moderate", "prototype": true, "requires_context": ["sudden onset"], "caveats": "Very brief; can blend into fear."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)"]
+    },
+    {
+      "id": "emotion_fear",
+      "label": "Fear prototype (AU1+AU2+AU5+AU20)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: brow raise + upper-lid raise + lip stretch",
+      "observable": "Raised/drawn brows, widened eyes, stretched lips",
+      "interpretations": [
+        {"state": "fear", "prior_confidence": 0.55, "evidence": "moderate", "prototype": true, "requires_context": [], "caveats": "Overlaps surprise; hardest basic emotion to separate reliably."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)"]
+    },
+    {
+      "id": "emotion_anger",
+      "label": "Anger prototype (AU4+AU5+AU7+AU23)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: brow lower + lid raise/tighten + lip press",
+      "observable": "Lowered drawn brows, hard stare, tightened lips",
+      "interpretations": [
+        {"state": "anger", "prior_confidence": 0.55, "evidence": "moderate", "prototype": true, "requires_context": ["context"], "caveats": "Also intense concentration; context required."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)"]
+    },
+    {
+      "id": "emotion_disgust",
+      "label": "Disgust prototype (AU9+AU10+AU16)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: nose wrinkle + upper-lip raise + lower-lip depress",
+      "observable": "Wrinkled nose, raised upper lip",
+      "interpretations": [
+        {"state": "disgust", "prior_confidence": 0.6, "evidence": "moderate", "prototype": true, "requires_context": [], "caveats": "Among the more recognizable; overlaps contempt."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)", "AffectNet 2017"]
+    },
+    {
+      "id": "emotion_contempt",
+      "label": "Contempt prototype (AU12+AU14 unilateral)",
+      "ekman_category": "affect_display",
+      "modality": ["facial"],
+      "measurable_via": "constellation: one-sided lip-corner pull + dimpler",
+      "observable": "Unilateral lip tightening/raise",
+      "interpretations": [
+        {"state": "contempt", "prior_confidence": 0.5, "evidence": "moderate", "prototype": true, "requires_context": ["unilateral"], "caveats": "Defined by one-sidedness; cross-cultural validity is debated."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969 (EMFACS)"]
+    },
+    {
+      "id": "gaze_aversion",
+      "label": "Gaze aversion / reduced eye contact",
+      "ekman_category": "regulator",
+      "modality": ["facial", "subtle_movement"],
+      "measurable_via": "OpenFace gaze vector + head pose; MediaPipe iris landmarks",
+      "observable": "Eye direction away from interlocutor beyond personal baseline",
+      "interpretations": [
+        {"state": "cognitive_load / thinking", "prior_confidence": 0.3, "evidence": "moderate", "requires_context": ["during answer formulation"], "caveats": "Looking away aids memory retrieval — normal, not evasive."},
+        {"state": "discomfort / shyness", "prior_confidence": 0.25, "evidence": "weak", "requires_context": ["baseline deviation", "culture"], "caveats": "Eye-contact norms are STRONGLY cultural; not a deception cue (DePaulo 2003)."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["DePaulo et al. 2003", "Ekman & Friesen 1969"]
+    },
+    {
+      "id": "regulator_head_nod",
+      "label": "Head nod",
+      "ekman_category": "regulator",
+      "modality": ["body", "subtle_movement"],
+      "measurable_via": "Head pose pitch oscillation (OpenFace/MediaPipe)",
+      "observable": "Repeated vertical head motion during listening/speaking",
+      "interpretations": [
+        {"state": "agreement / backchannel_encouragement", "prior_confidence": 0.5, "evidence": "moderate", "requires_context": ["listener role"], "caveats": "Can be polite continuer, not true agreement; culture-varying (e.g., reversed in some regions)."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "posture_lean_forward",
+      "label": "Forward torso lean",
+      "ekman_category": "affect_display",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: shoulder-hip vector angle vs vertical over time",
+      "observable": "Upper body inclined toward interlocutor relative to baseline",
+      "interpretations": [
+        {"state": "engagement / interest", "prior_confidence": 0.45, "evidence": "moderate", "requires_context": ["baseline known", "stable not transient"], "caveats": "Also occurs for hearing difficulty or aggression — context decides."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["BAP coding scheme", "EMOTIC 2020"]
+    },
+    {
+      "id": "posture_closed_arms",
+      "label": "Arms crossed over torso",
+      "ekman_category": "adaptor",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: wrist/elbow positions crossing torso midline",
+      "observable": "Forearms folded across chest",
+      "interpretations": [
+        {"state": "defensiveness / discomfort", "prior_confidence": 0.2, "evidence": "weak", "requires_context": ["baseline deviation", "negative co-signals"], "caveats": "POPULAR MYTH risk. Often just cold, comfortable, or habitual posture. Low diagnostic value."},
+        {"state": "self_soothing", "prior_confidence": 0.15, "evidence": "weak", "requires_context": ["stress context"], "caveats": "Do not over-read."}
+      ],
+      "inference_reliability": 1,
+      "sources": ["Nierenberg & Calero 1971 (folklore)", "DePaulo et al. 2003 (counter-evidence)"]
+    },
+    {
+      "id": "adaptor_self_touch_face",
+      "label": "Hand-to-face self-touch (adaptor)",
+      "ekman_category": "adaptor",
+      "modality": ["gesture", "subtle_movement"],
+      "measurable_via": "MediaPipe hand landmarks entering face-mesh region; frequency over time",
+      "observable": "Hand contacts face/mouth/neck, possibly repeated",
+      "interpretations": [
+        {"state": "anxiety / arousal", "prior_confidence": 0.2, "evidence": "weak", "requires_context": ["elevated above personal baseline rate", "corroborating prosody"], "caveats": "Classic 'tell' folklore. Adaptors rise with general arousal, NOT specifically with lying (DePaulo 2003). Report rate change, not a judgment."}
+      ],
+      "inference_reliability": 1,
+      "sources": ["Ekman & Friesen 1969", "DePaulo et al. 2003"]
+    },
+    {
+      "id": "posture_lean_back",
+      "label": "Backward lean",
+      "ekman_category": "affect_display",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: shoulder-vs-hip depth (z) inverted from forward lean",
+      "observable": "Upper body reclined away from interlocutor vs baseline",
+      "interpretations": [
+        {"state": "disengagement / skepticism", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation"], "caveats": "Also relaxation/comfort. Context decides."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["BAP coding scheme"]
+    },
+    {
+      "id": "posture_shrug",
+      "label": "Shoulder shrug",
+      "ekman_category": "emblem",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: shoulder-to-ear distance (neck length) shrinking vs baseline",
+      "observable": "Both shoulders raised toward ears, often brief",
+      "interpretations": [
+        {"state": "uncertainty / I-don't-know", "prior_confidence": 0.5, "evidence": "moderate", "requires_context": ["co-occurs with palm-up / brow"], "caveats": "Recognizable emblem but can be casual habit; localize culturally."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "posture_hands_on_hips",
+      "label": "Hands on hips (akimbo)",
+      "ekman_category": "affect_display",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: wrist near hip + elbow flared beyond shoulder line",
+      "observable": "One or both hands on hips, elbows out",
+      "interpretations": [
+        {"state": "assertiveness / readiness", "prior_confidence": 0.35, "evidence": "weak", "requires_context": ["baseline"], "caveats": "Also impatience or simple rest posture."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["BAP coding scheme"]
+    },
+    {
+      "id": "posture_expansive",
+      "label": "Expansive / open posture",
+      "ekman_category": "affect_display",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: limb spread from torso center normalized by shoulder width",
+      "observable": "Arms/limbs spread wide, body takes up more space",
+      "interpretations": [
+        {"state": "confidence / dominance", "prior_confidence": 0.35, "evidence": "weak", "requires_context": ["baseline", "sustained"], "caveats": "'Power pose' effects are contested and poorly replicated. Treat cautiously."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["EMOTIC 2020 (dominance dim)"]
+    },
+    {
+      "id": "regulator_head_tilt",
+      "label": "Lateral head tilt",
+      "ekman_category": "regulator",
+      "modality": ["body", "subtle_movement"],
+      "measurable_via": "MediaPipe pose/face: ear-line angle off horizontal",
+      "observable": "Head tilted to one side during interaction",
+      "interpretations": [
+        {"state": "interest / active_listening", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["listener role"], "caveats": "Also curiosity/evaluation; mild signal."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "adaptor_hand_to_neck",
+      "label": "Hand to neck / nape (adaptor)",
+      "ekman_category": "adaptor",
+      "modality": ["gesture", "body"],
+      "measurable_via": "MediaPipe pose: wrist near neck/upper-chest midpoint",
+      "observable": "Hand touches neck, nape, or collar",
+      "interpretations": [
+        {"state": "self_soothing / stress", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["elevated vs baseline rate"], "caveats": "Comfort gesture; rises with general arousal, not specifically deception (DePaulo 2003)."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969", "DePaulo et al. 2003"]
+    },
+    {
+      "id": "body_fidget",
+      "label": "Fidget / restless hand motion",
+      "ekman_category": "adaptor",
+      "modality": ["subtle_movement", "body"],
+      "measurable_via": "MediaPipe pose: wrist motion energy over a short window",
+      "observable": "Frequent small hand/arm movements vs baseline",
+      "interpretations": [
+        {"state": "restlessness / heightened_arousal", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["baseline deviation"], "caveats": "Boredom, energy, or habit too. NOT a lie cue (DePaulo 2003)."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["DePaulo et al. 2003"]
+    },
+    {
+      "id": "gesture_open_palm",
+      "label": "Open palm(s) shown",
+      "ekman_category": "illustrator",
+      "modality": ["gesture"],
+      "measurable_via": "MediaPipe hand landmarks: fingers extended/spread, palm toward viewer",
+      "observable": "Open hand(s), fingers apart, palm visible",
+      "interpretations": [
+        {"state": "openness / candor", "prior_confidence": 0.3, "evidence": "weak", "requires_context": ["accompanies speech"], "caveats": "Cultural/illustrative; weak standalone."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "gesture_hands_together",
+      "label": "Hands together / steepled / clasped",
+      "ekman_category": "adaptor",
+      "modality": ["gesture"],
+      "measurable_via": "MediaPipe hand landmarks: two-hand centroids close",
+      "observable": "Hands brought together (steeple, prayer, or clasp)",
+      "interpretations": [
+        {"state": "contemplation / anxiety (ambiguous)", "prior_confidence": 0.25, "evidence": "weak", "requires_context": ["finer finger configuration"], "caveats": "Steepling≈confidence vs tight clasp≈tension — needs finer detail to disambiguate."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["Nierenberg & Calero 1971 (folklore)"]
+    },
+    {
+      "id": "gesture_pointing",
+      "label": "Pointing / index extension",
+      "ekman_category": "illustrator",
+      "modality": ["gesture"],
+      "measurable_via": "MediaPipe hand landmarks: index extended, other fingers folded",
+      "observable": "Index finger extended toward a target/person",
+      "interpretations": [
+        {"state": "emphasis / assertion", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["accompanies speech"], "caveats": "Illustrator/deictic; can read as aggressive in some cultures."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "gesture_emblem",
+      "label": "Emblem (e.g., thumbs-up, OK-sign, wave)",
+      "ekman_category": "emblem",
+      "modality": ["gesture"],
+      "measurable_via": "Hand-gesture classifier (e.g., trained on Jester/IPN Hand) over MediaPipe hand landmarks",
+      "observable": "Discrete recognizable hand configuration with conventional meaning",
+      "interpretations": [
+        {"state": "explicit_message (culture-defined)", "prior_confidence": 0.8, "evidence": "strong", "requires_context": ["culture lookup REQUIRED"], "caveats": "Meaning is culturally encoded and can invert across cultures. Highest-confidence signal type BUT must localize."}
+      ],
+      "inference_reliability": 4,
+      "sources": ["Ekman & Friesen 1969", "IPN Hand 2020"]
+    },
+    {
+      "id": "illustrator_beat",
+      "label": "Beat / illustrator gestures with speech",
+      "ekman_category": "illustrator",
+      "modality": ["gesture"],
+      "measurable_via": "Hand motion energy time-aligned with speech onsets (MediaPipe + VAD)",
+      "observable": "Rhythmic hand movements synchronized to speech prosody",
+      "interpretations": [
+        {"state": "speech_emphasis / engagement", "prior_confidence": 0.5, "evidence": "moderate", "requires_context": ["co-occurs with speaking"], "caveats": "Rate varies by individual/culture; reduced illustrators can mean disengagement OR careful speech."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Ekman & Friesen 1969"]
+    },
+    {
+      "id": "prosody_pitch_rise",
+      "label": "Rising pitch / increased F0 variance",
+      "ekman_category": "affect_display",
+      "modality": ["speech_prosody"],
+      "measurable_via": "openSMILE eGeMAPS: F0 mean & variance, jitter",
+      "observable": "Elevated/variable fundamental frequency vs personal baseline",
+      "interpretations": [
+        {"state": "high_arousal (excitement or stress)", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["valence from other cues"], "caveats": "Arousal != valence. Rising pitch can't distinguish excited from anxious alone."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["IEMOCAP 2008", "openSMILE/eGeMAPS"]
+    },
+    {
+      "id": "prosody_pause_disfluency",
+      "label": "Filled pauses / speech disfluencies",
+      "ekman_category": "affect_display",
+      "modality": ["speech_prosody", "speech_content"],
+      "measurable_via": "Whisper transcript timing + filler detection; openSMILE pause stats",
+      "observable": "Increased 'um/uh', longer silences, restarts vs baseline",
+      "interpretations": [
+        {"state": "cognitive_load / uncertainty", "prior_confidence": 0.3, "evidence": "moderate", "requires_context": ["baseline deviation"], "caveats": "Indicates effort/uncertainty, NOT deception. Many honest speakers are disfluent."}
+      ],
+      "inference_reliability": 2,
+      "sources": ["DePaulo et al. 2003", "IEMOCAP 2008"]
+    },
+    {
+      "id": "context_scene_modifier",
+      "label": "Scene / situational context modifier",
+      "ekman_category": null,
+      "modality": ["external_context"],
+      "measurable_via": "Scene classifier + object/activity detection (EMOTIC-style)",
+      "observable": "Setting (interview, casual, crowd), activity, social configuration",
+      "interpretations": [
+        {"state": "PRIOR_ADJUSTER", "prior_confidence": null, "evidence": "moderate", "requires_context": [], "caveats": "Context is not a state itself; it reweights other signals' priors. e.g., crossed arms outdoors in winter => downweight 'defensive'. EMOTIC shows context adds +5-7% mAP."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["EMOTIC 2020", "EmotiCon 2020"]
+    }
+  ],
+
+  "fusion_policy": {
+    "method": "Combine per-signal priors across modalities (face, body, gesture, prosody, content) weighted by inference_reliability, then reweight by context modifiers, then calibrate to the subject's personal baseline.",
+    "output_format": "Ranked soft-labels over valence/arousal/dominance + discrete states, each with a confidence and the contributing signals listed for transparency.",
+    "hard_constraints": [
+      "No deception/lie/intent verdicts.",
+      "No output above 'observation' tier without >=2 corroborating signals.",
+      "Always show confidence and the evidence_strength of contributing signals.",
+      "Surface 'insufficient evidence' rather than guessing."
+    ]
+  }
+}

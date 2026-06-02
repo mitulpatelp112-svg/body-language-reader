@@ -1,0 +1,21 @@
+# OS / editor junk
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+.venv/
+
+# Trained model artifact (regenerate from your own data via backend/train.py)
+app/model.json
+
+# graphify internal cache / interpreter pointers (keep graph.html, graph.json, GRAPH_REPORT.md)
+graphify-out/cache/
+graphify-out/.graphify_*
+graphify-out/cost.json
+
+# CodeGraph index
+.codegraph/

@@ -1,0 +1,162 @@
+{
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/emotion-core.js": {
+    "mtime": 1780377492.0400116,
+    "ast_hash": "fd53734e1ce09df62b7d15efc399a4d7",
+    "semantic_hash": "fd53734e1ce09df62b7d15efc399a4d7"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/eval.js": {
+    "mtime": 1780377998.7094858,
+    "ast_hash": "9ca292553d0646385acf02b6a9d0fe5c",
+    "semantic_hash": "9ca292553d0646385acf02b6a9d0fe5c"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/model-infer.js": {
+    "mtime": 1780377901.5977483,
+    "ast_hash": "d6ddff4d470d6cddad636818907349da",
+    "semantic_hash": "d6ddff4d470d6cddad636818907349da"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/app.js": {
+    "mtime": 1780377972.1830604,
+    "ast_hash": "78c44cb5a22819b18d575b0dabd0eb38",
+    "semantic_hash": "78c44cb5a22819b18d575b0dabd0eb38"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/test/emotion_test.mjs": {
+    "mtime": 1780377552.1772716,
+    "ast_hash": "c78ec4a78eba253d082ec12d43ba0a13",
+    "semantic_hash": "c78ec4a78eba253d082ec12d43ba0a13"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/backend/server.py": {
+    "mtime": 1780376968.4670417,
+    "ast_hash": "d49bcefa504ca9635e3358fa1ad247b3",
+    "semantic_hash": "d49bcefa504ca9635e3358fa1ad247b3"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/backend/train.py": {
+    "mtime": 1780377918.9154375,
+    "ast_hash": "6425d685cbdcaba3531c72399b19b15e",
+    "semantic_hash": "6425d685cbdcaba3531c72399b19b15e"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/knowledge-base/signals.json": {
+    "mtime": 1780376408.2036371,
+    "ast_hash": "cfbf430e4d10f4cafae69bbb2833129b",
+    "semantic_hash": "cfbf430e4d10f4cafae69bbb2833129b"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resource-catalog.md": {
+    "mtime": 1780368596.2826095,
+    "ast_hash": "995ba2aeeca29c036f2589ac02dc1aee",
+    "semantic_hash": "995ba2aeeca29c036f2589ac02dc1aee"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/README.md": {
+    "mtime": 1780378080.8163102,
+    "ast_hash": "9fd68b3538ff9d221b73dca472fd86c5",
+    "semantic_hash": "9fd68b3538ff9d221b73dca472fd86c5"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/eval.html": {
+    "mtime": 1780377540.2524812,
+    "ast_hash": "c6656464359e14902dc6b34538e5140f",
+    "semantic_hash": "c6656464359e14902dc6b34538e5140f"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/index.html": {
+    "mtime": 1780377964.5381517,
+    "ast_hash": "999fb172f06097371d0a694c508ac022",
+    "semantic_hash": "999fb172f06097371d0a694c508ac022"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/app/README.md": {
+    "mtime": 1780377010.2785823,
+    "ast_hash": "9f696580bffde4f16519e2968dbd3d98",
+    "semantic_hash": "9f696580bffde4f16519e2968dbd3d98"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/datasets/README.md": {
+    "mtime": 1780369006.3751874,
+    "ast_hash": "ced5df93c1f06b2c44165d9e1ca6917b",
+    "semantic_hash": "ced5df93c1f06b2c44165d9e1ca6917b"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/notes/ekman_friesen_ocr.txt": {
+    "mtime": 1780369839.1444566,
+    "ast_hash": "71fcf2cc5d60c9557f8384502cd9cbc8",
+    "semantic_hash": "71fcf2cc5d60c9557f8384502cd9cbc8"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/notes/reading-notes.md": {
+    "mtime": 1780369861.8830621,
+    "ast_hash": "788a3e64e6d4a89e6bb00c5837239ef0",
+    "semantic_hash": "788a3e64e6d4a89e6bb00c5837239ef0"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/notes/user_pdf_ocr.txt": {
+    "mtime": 1780369743.4516547,
+    "ast_hash": "6ecd0948c3afdcb9d38a864f400d18e0",
+    "semantic_hash": "6ecd0948c3afdcb9d38a864f400d18e0"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/backend/requirements.txt": {
+    "mtime": 1780376971.9405327,
+    "ast_hash": "16dc2253378e8a524f2c2f3fc6325d3c",
+    "semantic_hash": "16dc2253378e8a524f2c2f3fc6325d3c"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/backend/README.md": {
+    "mtime": 1780376986.7621381,
+    "ast_hash": "1edc01998fa6b2d766a9c2b68df03cfe",
+    "semantic_hash": "1edc01998fa6b2d766a9c2b68df03cfe"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/backend/requirements-train.txt": {
+    "mtime": 1780378060.179948,
+    "ast_hash": "743e72c46fff19d5f4d34f838044dffc",
+    "semantic_hash": "743e72c46fff19d5f4d34f838044dffc"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/knowledge-base/README.md": {
+    "mtime": 1780369951.014346,
+    "ast_hash": "427f1cfd897efe4356bab08a6fe13b9e",
+    "semantic_hash": "427f1cfd897efe4356bab08a6fe13b9e"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/user_unknown_62pg.pdf": {
+    "mtime": 1780367718.7311332,
+    "ast_hash": "68012a414fa0e012423893a300b9a86a",
+    "semantic_hash": "68012a414fa0e012423893a300b9a86a"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/1972-29107-001.pdf": {
+    "mtime": 1780368166.4634917,
+    "ast_hash": "f36408d5c09ff8b8204b8d26d8c8104e",
+    "semantic_hash": "f36408d5c09ff8b8204b8d26d8c8104e"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/HowToReadAPersonLikeABook .pdf": {
+    "mtime": 1780367296.433974,
+    "ast_hash": "0d3b4752f64a4ba5cb62346e5c098963",
+    "semantic_hash": "0d3b4752f64a4ba5cb62346e5c098963"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/iemocap_original_2008.pdf": {
+    "mtime": 1780368810.866016,
+    "ast_hash": "cf25eaa84c42bb89f8b9798653fcce2b",
+    "semantic_hash": "cf25eaa84c42bb89f8b9798653fcce2b"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/affectnet_2017.pdf": {
+    "mtime": 1780368756.5398455,
+    "ast_hash": "98090ec0d89d83dab81fed694a8c1a73",
+    "semantic_hash": "98090ec0d89d83dab81fed694a8c1a73"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/affectnet_plus_2024.pdf": {
+    "mtime": 1780368771.1808052,
+    "ast_hash": "d776d177add72e9f0aaaeece4ff0f88a",
+    "semantic_hash": "d776d177add72e9f0aaaeece4ff0f88a"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/iemocap_multimodal_2018.pdf": {
+    "mtime": 1780368771.4223902,
+    "ast_hash": "6e72f84a6d7edc23440913c06da6cfd1",
+    "semantic_hash": "6e72f84a6d7edc23440913c06da6cfd1"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/ipn_hand_2020.pdf": {
+    "mtime": 1780368779.4767394,
+    "ast_hash": "cd523318c29fba08fcfd68662ffe6810",
+    "semantic_hash": "cd523318c29fba08fcfd68662ffe6810"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/cmu_mosei_transformer_2025.pdf": {
+    "mtime": 1780368780.9025605,
+    "ast_hash": "e1987035af598be152e2ef8245d984ad",
+    "semantic_hash": "e1987035af598be152e2ef8245d984ad"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/emotic_context_2020.pdf": {
+    "mtime": 1780368784.3400307,
+    "ast_hash": "295a2938c50f1eb2f65048839d0389c3",
+    "semantic_hash": "295a2938c50f1eb2f65048839d0389c3"
+  },
+  "/Users/mitulpatel/Documents/Claude/body language reader/resources/papers/h3wb_wholebody_2022.pdf": {
+    "mtime": 1780368800.262076,
+    "ast_hash": "4c3b3e69f1fc0ed0dc65d1426212b24b",
+    "semantic_hash": "4c3b3e69f1fc0ed0dc65d1426212b24b"
+  }
+}

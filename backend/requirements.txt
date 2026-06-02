@@ -1,0 +1,5 @@
+py-feat>=0.6.0
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pillow>=10.0
+numpy>=1.24
