@@ -584,6 +584,50 @@
     }
   ],
 
+  "constructs": {
+    "_doc": "EVIDENCE-BACKED HIGHER-LEVEL READS. Each construct is a constellation: multiple independent signals vote for it, and confidence scales with how many corroborate. This is the scientifically supported way to read behavior — single cues are weak (~55%, DePaulo 2003) but cue constellations are far stronger (thin-slice r≈.39, Ambady & Rosenthal 1992; multimodal engagement/stress detection 0.7–0.93). A construct with >=min_cues active signals is treated as corroborated (confident), not hedged.",
+    "engagement": {
+      "label": "Engagement / Interest",
+      "positive": {"posture_lean_forward":1.0,"regulator_head_nod":0.8,"regulator_head_tilt":0.6,"gesture_open_palm":0.5,"face_brow_raise":0.4,"prosody_pitch_rise":0.5},
+      "negative": {"posture_lean_back":0.8,"gaze_aversion":0.6,"posture_closed_arms":0.4,"body_fidget":0.3},
+      "reliability": 4, "min_cues": 2,
+      "evidence": "Thin-slice behavior predicts engagement/interpersonal outcomes at r≈.39 (Ambady & Rosenthal 1992); multimodal classroom engagement detection ≈90%+ fusing face+posture+gesture.",
+      "sources": ["Ambady & Rosenthal 1992 (thin slices)", "Bimodal classroom engagement recognition 2022"]
+    },
+    "discomfort_anxiety": {
+      "label": "Discomfort / Anxiety",
+      "positive": {"adaptor_self_touch_face":0.9,"adaptor_hand_to_neck":0.8,"body_fidget":0.8,"face_lip_press":0.5,"face_lip_suck":0.5,"gaze_aversion":0.5,"posture_closed_arms":0.5,"face_blink_rate":0.5,"posture_shrug":0.3},
+      "negative": {"face_smile_genuine":0.6,"posture_expansive":0.5},
+      "reliability": 4, "min_cues": 2,
+      "evidence": "Self-directed displacement behaviours (self-touch, fidget) are reliably read as stress (signal value of stress behaviour, 2022); hands/eyes/mouth/torso are the most salient anxiety cues, r≈.50.",
+      "sources": ["Signal value of stress behaviour 2022", "Nonverbal cues for anxiety / emotional leakage"]
+    },
+    "confidence_dominance": {
+      "label": "Confidence / Dominance",
+      "positive": {"posture_expansive":1.0,"posture_hands_on_hips":0.9,"gesture_pointing":0.5,"prosody_pitch_rise":0.3,"regulator_head_nod":0.3},
+      "negative": {"posture_shrug":0.7,"adaptor_self_touch_face":0.5,"gaze_aversion":0.5,"posture_closed_arms":0.4},
+      "reliability": 3, "min_cues": 2,
+      "evidence": "The reliably-recognized dominance display is a multi-cue constellation: bodily expansiveness (expanded posture, arms out, hands on hips) + downward head tilt + no smile — perceived from coordinated multi-channel cues, NOT single signals (Witkower & Tracy 2019).",
+      "sources": ["Witkower & Tracy 2019", "Elkjær et al. 2020 expansive/contractive meta-analysis"]
+    },
+    "disengagement": {
+      "label": "Disengagement / Withdrawal",
+      "positive": {"posture_lean_back":1.0,"gaze_aversion":0.7,"posture_closed_arms":0.6,"body_fidget":0.4,"posture_shrug":0.3},
+      "negative": {"posture_lean_forward":0.8,"regulator_head_nod":0.5,"face_smile_genuine":0.4},
+      "reliability": 3, "min_cues": 2,
+      "evidence": "Contractive/closed posture + gaze aversion signal low involvement; the inverse of the engagement constellation (Mehrabian immediacy; Ambady & Rosenthal 1992).",
+      "sources": ["Mehrabian immediacy", "Ambady & Rosenthal 1992"]
+    },
+    "rapport_openness": {
+      "label": "Rapport / Openness",
+      "positive": {"face_smile_genuine":0.9,"regulator_head_nod":0.7,"gesture_open_palm":0.7,"posture_lean_forward":0.6,"regulator_head_tilt":0.4},
+      "negative": {"posture_closed_arms":0.6,"gaze_aversion":0.5,"face_lip_press":0.3},
+      "reliability": 3, "min_cues": 2,
+      "evidence": "Rapport is judged from expressivity, attentiveness, positivity, and coordination; low rapport detectable from facial cues at avg precision 0.7 (Grahe & Bernieri 1999; Müller et al. 2018).",
+      "sources": ["Grahe & Bernieri 1999", "Müller et al. 2018 low-rapport detection"]
+    }
+  },
+
   "fusion_policy": {
     "method": "Combine per-signal priors across modalities (face, body, gesture, prosody, content) weighted by inference_reliability, then reweight by context modifiers, then calibrate to the subject's personal baseline.",
     "output_format": "Ranked soft-labels over valence/arousal/dominance + discrete states, each with a confidence and the contributing signals listed for transparency.",

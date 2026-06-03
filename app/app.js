@@ -440,6 +440,31 @@ function activations(f) {
     prosody_pause_disfluency: prosody.voiced ? clip(prosody.disfluency) : 0
   };
 }
+// Evidence-backed constructs: multiple signals vote; confidence scales with corroboration.
+function computeConstructs(act) {
+  const C = KB.constructs || {};
+  const byId = Object.fromEntries(KB.signals.map(s => [s.id, s]));
+  const out = [];
+  for (const [key, c] of Object.entries(C)) {
+    if (key.startsWith("_")) continue;
+    let pos = 0, neg = 0; const active = [];
+    for (const [sig, w] of Object.entries(c.positive || {})) {
+      const a = act[sig] || 0;
+      if (a > 0.12) { pos += w * a; active.push(byId[sig]?.label || sig); }
+    }
+    for (const [sig, w] of Object.entries(c.negative || {})) neg += w * (act[sig] || 0);
+    const nCues = active.length;
+    if (nCues === 0) continue;
+    const corrob = Math.min(1, nCues / (c.min_cues || 2));
+    const conf = Math.min(0.92, clip(pos * 0.7 * (0.55 + 0.45 * corrob) - 0.5 * neg)); // cap: never claim certainty
+    out.push({ state: c.label, p: conf, contributors: active,
+      prototype: nCues >= (c.min_cues || 2), nCues,
+      evid: (c.reliability >= 3 ? "moderate" : "weak"),
+      cite: (c.evidence || "").split(";")[0].trim() });
+  }
+  return out;
+}
+
 function interpret(f) {
   const act = activations(f);
   const byId = Object.fromEntries(KB.signals.map(s => [s.id, s]));
@@ -485,14 +510,24 @@ function interpret(f) {
     }
   }
 
+  // evidence-backed CONSTRUCTS: constellations vote -> corroborated, confident, cited reads
+  for (const cs of computeConstructs(act)) {
+    const st = states[cs.state] || (states[cs.state] = { p:0, contributors:[], caveats:new Set(), evid:cs.evid, prototype:false });
+    st.p = 1 - (1 - st.p) * (1 - cs.p * frameQ);
+    for (const c of cs.contributors) st.contributors.push(c);
+    if (cs.prototype) st.prototype = true;          // >=min_cues corroborating -> not hedged
+    if (cs.cite) st.caveats.add("Evidence: " + cs.cite);
+  }
+
   // context reweighting (EMOTIC principle): adjust priors by selected context
   applyContext(states, $("ctx").value);
 
   // hard constraint: a state needs >=2 corroborating signals to be elevated
-  const ranked = Object.entries(states).map(([state, v]) => ({
-    state, p: v.p, n: v.contributors.length, contributors: v.contributors,
-    caveats: [...v.caveats], evid: v.evid, weak: v.contributors.length < 2 && !v.prototype
-  })).sort((x,y) => y.p - x.p).slice(0, 10);
+  const ranked = Object.entries(states).map(([state, v]) => {
+    const contributors = [...new Set(v.contributors)];
+    return { state, p: v.p, n: contributors.length, contributors,
+      caveats: [...v.caveats], evid: v.evid, weak: contributors.length < 2 && !v.prototype };
+  }).sort((x,y) => y.p - x.p).slice(0, 10);
 
   const dims = estimateDims(f, act);
   dims.v *= frameQ; dims.a *= frameQ; dims.d *= frameQ;   // damp dims on low-quality frames
@@ -555,8 +590,11 @@ function smoothUpdate(raw) {
 
 function renderSmoothed() {
   const dims = SMOOTH.dims;
-  const states = [...SMOOTH.states.entries()].map(([state,v]) => ({ state, ...v }))
-                  .filter(s => s.p > 0.02).sort((a,b)=>b.p-a.p).slice(0, 6);
+  let states = [...SMOOTH.states.entries()].map(([state,v]) => ({ state, ...v }))
+                  .filter(s => s.p > 0.02).sort((a,b)=>b.p-a.p);
+  // Lead with corroborated (confident) reads; only fall back to hedged single-cue states if none.
+  const confident = states.filter(s => !s.weak);
+  states = (confident.length ? confident : states).slice(0, 6);
   const signals = [...SMOOTH.signals.entries()].map(([id,v]) => ({ id, ...v }))
                   .filter(s => s.a > 0.1).sort((a,b)=>b.a-a.a).slice(0, 12);
   render(signals, states, dims);
@@ -702,7 +740,13 @@ const FALLBACK_KB = { signals: [
   {id:"gesture_open_palm",label:"Open palm(s)",inference_reliability:2,interpretations:[{state:"openness / candor",prior_confidence:0.3,evidence:"weak",caveats:"Cultural/illustrative; weak standalone."}]},
   {id:"gesture_hands_together",label:"Hands together / steepled",inference_reliability:2,interpretations:[{state:"contemplation / anxiety (ambiguous)",prior_confidence:0.25,evidence:"weak",caveats:"Steepling=confidence vs clasping=tension — needs finer detail."}]},
   {id:"gesture_pointing",label:"Pointing / index extension",inference_reliability:3,interpretations:[{state:"emphasis / assertion",prior_confidence:0.4,evidence:"moderate",caveats:"Illustrator; can read as aggressive in some cultures."}]}
-]};
+], constructs: {
+  engagement:{label:"Engagement / Interest",positive:{posture_lean_forward:1.0,regulator_head_nod:0.8,regulator_head_tilt:0.6,gesture_open_palm:0.5,face_brow_raise:0.4,prosody_pitch_rise:0.5},negative:{posture_lean_back:0.8,gaze_aversion:0.6,posture_closed_arms:0.4,body_fidget:0.3},reliability:4,min_cues:2,evidence:"Thin-slice behavior predicts engagement at r≈.39 (Ambady & Rosenthal 1992); multimodal engagement detection ≈90%+"},
+  discomfort_anxiety:{label:"Discomfort / Anxiety",positive:{adaptor_self_touch_face:0.9,adaptor_hand_to_neck:0.8,body_fidget:0.8,face_lip_press:0.5,face_lip_suck:0.5,gaze_aversion:0.5,posture_closed_arms:0.5,face_blink_rate:0.5,posture_shrug:0.3},negative:{face_smile_genuine:0.6,posture_expansive:0.5},reliability:4,min_cues:2,evidence:"Self-directed displacement behaviours reliably read as stress; salient cues r≈.50"},
+  confidence_dominance:{label:"Confidence / Dominance",positive:{posture_expansive:1.0,posture_hands_on_hips:0.9,gesture_pointing:0.5,prosody_pitch_rise:0.3,regulator_head_nod:0.3},negative:{posture_shrug:0.7,adaptor_self_touch_face:0.5,gaze_aversion:0.5,posture_closed_arms:0.4},reliability:3,min_cues:2,evidence:"Dominance display is a multi-cue constellation: expansiveness + hands-on-hips + head tilt + no smile (Witkower & Tracy 2019)"},
+  disengagement:{label:"Disengagement / Withdrawal",positive:{posture_lean_back:1.0,gaze_aversion:0.7,posture_closed_arms:0.6,body_fidget:0.4,posture_shrug:0.3},negative:{posture_lean_forward:0.8,regulator_head_nod:0.5,face_smile_genuine:0.4},reliability:3,min_cues:2,evidence:"Contractive posture + gaze aversion signal low involvement (Mehrabian immediacy)"},
+  rapport_openness:{label:"Rapport / Openness",positive:{face_smile_genuine:0.9,regulator_head_nod:0.7,gesture_open_palm:0.7,posture_lean_forward:0.6,regulator_head_tilt:0.4},negative:{posture_closed_arms:0.6,gaze_aversion:0.5,face_lip_press:0.3},reliability:3,min_cues:2,evidence:"Rapport judged from expressivity/attention/positivity/coordination; low rapport detectable at precision 0.7 (Grahe & Bernieri 1999)"}
+}};
 
 // ---------- wire up ----------
 $("start").addEventListener("click", async () => {

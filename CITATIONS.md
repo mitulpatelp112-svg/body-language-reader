@@ -47,6 +47,29 @@ All third-party materials remain the property of their respective authors/publis
 - **Materzynska, J., et al. (2019).** The Jester Dataset: A Large-Scale Video Dataset of Human
   Gestures. *ICCV Workshops.*
 
+## Construct-level evidence (the corroboration / confidence layer)
+These ground the `constructs` in `knowledge-base/signals.json` — the evidence that cue *constellations*
+(not single cues) support confident reads:
+- **Ambady, N., & Rosenthal, R. (1992).** Thin slices of expressive behavior as predictors of
+  interpersonal consequences: A meta-analysis. *Psychological Bulletin, 111*(2), 256–274. (Overall
+  r≈.39 predicting interpersonal outcomes from <5 min of behavior; channel didn't matter.)
+- **Grahe, J. E., & Bernieri, F. J. (1999).** The importance of nonverbal cues in judging rapport.
+  *Journal of Nonverbal Behavior, 23*(4), 253–269.
+- **Müller, P., Huang, M. X., & Bulling, A. (2018).** Detecting Low Rapport During Natural
+  Interactions in Small Groups from Non-Verbal Behaviour. *IUI.* arXiv:1801.06055.
+- **Witkower, Z., & Tracy, J. L. (2019).** A Facial-Action Imposter: How Head Tilt Influences
+  Perceptions of Dominance From a Neutral Face. *Psychological Science.* (Dominance as a multi-cue
+  display.)
+- **Elkjær, E., Mikkelsen, M. B., Michalak, J., Mennin, D. S., & O'Toole, M. S. (2020).** Expansive
+  and Contractive Postures and Movement: A Systematic Review and Meta-Analysis. *Perspectives on
+  Psychological Science.*
+- **Mehrabian, A. (1969).** Some referents and measures of nonverbal behavior (immediacy /
+  engagement cues). *Behavior Research Methods & Instrumentation.*
+- **Mohiyeddini / Troisi — Signal value of stress behaviour (2022).** *Evolution and Human
+  Behavior.* (Self-directed displacement behaviours reliably read as stress.)
+- **Bimodal Learning Engagement Recognition from Videos in the Classroom (2022).** *Sensors / PMC.*
+  (Multimodal engagement detection accuracy.)
+
 ## Tools & open-source libraries
 - **MediaPipe** — Lugaresi, C., et al. (2019). MediaPipe: A Framework for Building Perception
   Pipelines. Google. (FaceLandmarker, PoseLandmarker, HandLandmarker; BlazePose — Bazarevsky et

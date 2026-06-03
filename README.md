@@ -18,6 +18,8 @@ confidence-scored, and honest about uncertainty.
                  ┌─────────────── INTERPRETATION ────────────────────────┐
   quality gating (reject bad frames) · personal-baseline calibration     │
   signals.json (42 signals) → AU constellations = 7 emotion prototypes   │
+  evidence-backed CONSTRUCTS (engagement, anxiety, dominance, rapport,   │
+    disengagement) — multiple cues vote → confident, corroborated, cited │
   fusion: heuristic + trained model + FACS backend (noisy-OR, weighted)  │
   context reweighting (EMOTIC) · ≥2-signal corroboration rule            │
                                    ▼
