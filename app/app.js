@@ -20,6 +20,12 @@ const blinkTimes = [];         // timestamps of recent blinks
 let blinkOpen = true;          // blink edge-detector state
 let frameQ = 1;                // current frame tracking-quality 0..1 (gates interpretation)
 let lastBlendshapes = null;    // raw blendshape dict for the trained model
+// noise reduction
+const FEAT_EMA = {};           // feature-level smoothing (denoise at the source)
+const FEAT_A = 0.35;
+const activeSig = new Set();    // hysteresis: which signals are currently latched on
+const SIG_ON = 0.20, SIG_OFF = 0.10;   // Schmitt-trigger thresholds (no flicker at one cutoff)
+const f0Hist = [];             // recent pitch readings for median filtering
 const lumaCanvas = Object.assign(document.createElement("canvas"), {width:32, height:24});
 const lumaCtx = lumaCanvas.getContext("2d", { willReadFrequently: true });
 // optional py-feat FACS backend (calibrated AUs/emotions) — off by default
@@ -137,10 +143,12 @@ function analyzeAudio() {
   prosody.voiced = voiced ? 1 : 0;
   voicedHist.push(voiced ? 1 : 0); if (voicedHist.length > 60) voicedHist.shift();
   if (voiced) {
-    const f0 = autocorrelate(audioBuf, audioCtx.sampleRate);   // fundamental frequency
-    if (f0 > 0) {
+    const f0raw = autocorrelate(audioBuf, audioCtx.sampleRate); // fundamental frequency
+    if (f0raw > 0) {
+      f0Hist.push(f0raw); if (f0Hist.length > 5) f0Hist.shift();
+      const f0 = median(f0Hist);                                // median filter kills octave jumps
       pitchBase = pitchBase == null ? f0 : 0.98*pitchBase + 0.02*f0;
-      prosody.pitchRise = clip((f0 - pitchBase) / 60);         // semitone-ish rise vs personal pitch
+      prosody.pitchRise = clip((f0 - pitchBase) / 60);          // semitone-ish rise vs personal pitch
     }
     energyBase = energyBase == null ? rms : 0.97*energyBase + 0.03*rms;
     prosody.energyRise = clip((rms - energyBase) / 0.05);
@@ -195,7 +203,8 @@ function loop() {
     const hands = handLM.detectForVideo(video, t);
     const qa = frameQuality(face, pose);
     frameQ = frameQ + 0.2*(qa.q - frameQ);          // smooth the quality signal
-    const feat = extractFeatures(face, pose, hands);
+    let feat = extractFeatures(face, pose, hands);
+    if (feat) feat = smoothFeatures(feat);          // denoise features before interpretation
     drawOverlay(face, pose, hands);
     updateQualityUI(qa);
     if (feat) {
@@ -364,6 +373,21 @@ function blinkUpdate(blinkVal, t) {
 }
 // geometric mean — AU constellation co-activation (ALL components must be present)
 const gm = (...xs) => Math.pow(xs.reduce((p,x)=>p*Math.max(0.0001,x),1), 1/xs.length);
+// EMA-smooth every numeric feature so per-frame landmark jitter doesn't drive activations
+function smoothFeatures(f) {
+  const sf = { ...f };
+  for (const k in f) {
+    const v = f[k];
+    if (typeof v === "number" && Number.isFinite(v)) {
+      FEAT_EMA[k] = (FEAT_EMA[k] === undefined) ? v : (1 - FEAT_A) * FEAT_EMA[k] + FEAT_A * v;
+      sf[k] = FEAT_EMA[k];
+    }
+  }
+  return sf;
+}
+const deadzone = (x, t) => (Math.abs(x) < t ? 0 : x);   // suppress tiny (noise-level) dimension values
+const median = (arr) => { const a = [...arr].sort((x,y)=>x-y); return a[Math.floor(a.length/2)]; };
+
 function nodEnergy() {
   if (noseHist.length < 8) return 0;
   let signChanges = 0, prev = 0;
@@ -472,7 +496,9 @@ function interpret(f) {
   const activeSignals = [];
 
   for (const [id, a] of Object.entries(act)) {
-    if (a < 0.12) continue;
+    // hysteresis: latch on above SIG_ON, stay on until below SIG_OFF -> no flicker at a single cutoff
+    const on = activeSig.has(id) ? (a > SIG_OFF) : (a > SIG_ON);
+    if (on) activeSig.add(id); else { activeSig.delete(id); continue; }
     const sig = byId[id]; if (!sig) continue;
     activeSignals.push({ id, label: sig.label, a, rel: sig.inference_reliability });
     for (const interp of sig.interpretations) {
@@ -556,7 +582,7 @@ function estimateDims(f, act) {
      + (act.posture_expansive||0)*0.6 + (act.posture_hands_on_hips||0)*0.5 + (act.gesture_pointing||0)*0.4
      - (act.gaze_aversion||0)*0.3 - (act.face_eye_widen||0)*0.3 - (act.posture_closed_arms||0)*0.2
      - (act.posture_shrug||0)*0.4 - (act.adaptor_hand_to_neck||0)*0.3;
-  return { v: clamp(v), a: clamp(a), d: clamp(d) };
+  return { v: deadzone(clamp(v), 0.07), a: deadzone(clamp(a), 0.06), d: deadzone(clamp(d), 0.07) };
 }
 
 // ---------- Smoothing (EMA every frame) + throttled render (~4x/sec) ----------
@@ -596,7 +622,7 @@ function renderSmoothed() {
   const confident = states.filter(s => !s.weak);
   states = (confident.length ? confident : states).slice(0, 6);
   const signals = [...SMOOTH.signals.entries()].map(([id,v]) => ({ id, ...v }))
-                  .filter(s => s.a > 0.1).sort((a,b)=>b.a-a.a).slice(0, 12);
+                  .filter(s => s.a > 0.15).sort((a,b)=>b.a-a.a).slice(0, 10);
   render(signals, states, dims);
 }
 
