@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#0a0d11"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.18" r="0.6">
+      <stop offset="0" stop-color="#45d3ad" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#45d3ad" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      text { font-family: -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- brand mark -->
+  <g transform="translate(80,74)">
+    <rect width="60" height="60" rx="15" fill="#11161d" stroke="#45d3ad" stroke-opacity="0.3"/>
+    <path d="M9 33 H21 L25 21 L31 45 L37 30 L40 33 H51" fill="none" stroke="#45d3ad" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="80" y="40" font-size="30" font-weight="600" fill="#e8eef5" letter-spacing="-0.5">Presence</text>
+  </g>
+
+  <!-- headline -->
+  <text x="80" y="320" font-size="76" font-weight="680" fill="#e8eef5" letter-spacing="-2.2">See how you</text>
+  <text x="80" y="404" font-size="76" font-weight="680" fill="#e8eef5" letter-spacing="-2.2">actually come across.</text>
+
+  <!-- subtext -->
+  <text x="82" y="470" font-size="27" fill="#94a1b2">A private, on-device body-language self-coach.</text>
+
+  <!-- signal chips -->
+  <g transform="translate(82,520)" font-size="22" fill="#cdd9e5">
+    <g>
+      <rect width="150" height="44" rx="22" fill="#141a21" stroke="#232c37"/>
+      <circle cx="26" cy="22" r="5" fill="#45d3ad"/>
+      <text x="44" y="29">Face</text>
+    </g>
+    <g transform="translate(166,0)">
+      <rect width="150" height="44" rx="22" fill="#141a21" stroke="#232c37"/>
+      <circle cx="26" cy="22" r="5" fill="#45d3ad"/>
+      <text x="44" y="29">Voice</text>
+    </g>
+    <g transform="translate(332,0)">
+      <rect width="160" height="44" rx="22" fill="#141a21" stroke="#232c37"/>
+      <circle cx="26" cy="22" r="5" fill="#45d3ad"/>
+      <text x="44" y="29">Pulse</text>
+    </g>
+  </g>
+
+  <!-- right motif: heartbeat pulse -->
+  <path d="M740 250 H840 L880 150 L935 360 L985 230 L1015 250 H1120"
+        fill="none" stroke="#45d3ad" stroke-width="5" stroke-opacity="0.85"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

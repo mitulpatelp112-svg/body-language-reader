@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Presence">
+  <rect width="64" height="64" rx="15" fill="#0b0e12"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="13.5" fill="none" stroke="#45d3ad" stroke-opacity="0.22" stroke-width="1.5"/>
+  <path d="M7 35 H21 L26 21 L33 47 L39 31 L43 35 H57"
+        fill="none" stroke="#45d3ad" stroke-width="4.2"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

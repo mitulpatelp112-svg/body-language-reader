@@ -3,8 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Presence — private body-language self-coach</title>
+<title>Presence - private body-language self-coach</title>
 <meta name="description" content="Presence reads your face, posture, voice, and pulse in real time and coaches how you come across. On-device, private, and honest about uncertainty." />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0b0e12" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Presence - private body-language self-coach" />
+<meta property="og:description" content="See how you actually come across. A private, on-device body-language self-coach." />
+<meta property="og:image" content="/assets/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Presence - private body-language self-coach" />
+<meta name="twitter:image" content="/assets/og.png" />
+<script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
   /* Theme: dark, locked for the whole page. One accent (mint-teal). Radius rule: cards 16px, buttons full pill. */
@@ -12,8 +24,16 @@
     --bg:#0b0e12; --bg2:#0e1218; --card:#141a21; --card2:#171e26;
     --line:#232c37; --text:#e8eef5; --muted:#94a1b2; --faint:#5c6776;
     --accent:#45d3ad; --accent-soft:rgba(69,211,173,.14); --accent-ink:#06130e;
+    --track:#1d2530; --header-bg:rgba(11,14,18,.78); --shadow:rgba(0,0,0,.4);
     --r-card:16px; --maxw:1180px;
   }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa; --bg2:#edf1f5; --card:#ffffff; --card2:#f6f8fb;
+    --line:#e1e6ec; --text:#0d1117; --muted:#586273; --faint:#8a94a3;
+    --accent:#0a8f6e; --accent-soft:rgba(10,143,110,.10); --accent-ink:#ffffff;
+    --track:#dde3ea; --header-bg:rgba(255,255,255,.82); --shadow:rgba(13,17,23,.12);
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
@@ -27,7 +47,7 @@
   .muted{color:var(--muted)}
 
   /* nav */
-  header{position:sticky;top:0;z-index:50;background:rgba(11,14,18,.78);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:50;background:var(--header-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
   nav{height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}
   .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:-.01em;font-size:17px}
   .brand i{color:var(--accent);font-size:20px}
@@ -40,6 +60,11 @@
   .btn-primary:hover{background:#54e0bb}
   .btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
   .btn-ghost:hover{border-color:var(--faint);background:var(--card)}
+  .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;
+    border-radius:999px;background:transparent;border:1px solid var(--line);cursor:pointer;font-size:17px;
+    transition:background .2s ease,border-color .2s ease}
+  .iconbtn:hover{background:var(--card);border-color:var(--faint)}
+  .iconbtn i{color:var(--accent)}
   .nav-cta{display:none}
   @media(min-width:760px){ .nav-cta{display:inline-flex} }
   @media(max-width:759px){ .navlinks{display:none} }
@@ -57,7 +82,7 @@
 
   /* hero live preview card (a real mini version of the app UI, not a screenshot) */
   .preview{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
-    border-radius:var(--r-card);padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+    border-radius:var(--r-card);padding:18px;box-shadow:0 24px 60px var(--shadow)}
   .pv-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .pv-chip{font-size:11px;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
   .pv-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(69,211,173,.55);animation:pulse 2.4s ease-out infinite}
@@ -72,7 +97,7 @@
   .bar-row{display:flex;flex-direction:column;gap:5px}
   .bar-top{display:flex;justify-content:space-between;font-size:13px}
   .bar-top span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
-  .track{height:6px;background:#1d2530;border-radius:4px;overflow:hidden}
+  .track{height:6px;background:var(--track);border-radius:4px;overflow:hidden}
   .fill{height:100%;background:var(--accent);border-radius:4px;width:0;animation:grow 1.1s cubic-bezier(.16,1,.3,1) forwards}
   @keyframes grow{to{width:var(--w)}}
   .pv-foot{display:flex;gap:14px;margin-top:14px;font-size:11.5px;color:var(--muted)}
@@ -97,7 +122,7 @@
   .cell.big{justify-content:space-between;background:
     radial-gradient(120% 90% at 100% 0%, rgba(69,211,173,.16), transparent 55%), var(--card2)}
   .cell.big h3{font-size:22px}
-  .cell.grad-a{background:radial-gradient(110% 90% at 0% 100%, rgba(80,160,255,.18), transparent 60%), var(--card)}
+  .cell.grad-a{background:radial-gradient(110% 90% at 0% 100%, rgba(69,211,173,.16), transparent 60%), var(--card)}
   .cell.grad-b{background:linear-gradient(160deg, rgba(69,211,173,.10), transparent 60%), var(--card)}
   .mini-mesh{margin-top:auto;display:flex;gap:5px;flex-wrap:wrap;max-width:220px;opacity:.85}
   .mini-mesh span{width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.5}
@@ -168,7 +193,10 @@
         <a href="#science">Science</a>
         <a href="#privacy">Privacy</a>
       </div>
-      <a class="btn btn-primary nav-cta" href="/app/">Open the demo</a>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="themeToggle" class="iconbtn" type="button" aria-label="Toggle theme"></button>
+        <a class="btn btn-primary nav-cta" href="/app/">Open the demo</a>
+      </div>
     </nav>
   </div>
 </header>
@@ -344,5 +372,6 @@
   }, { threshold: 0.18 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
+<script src="/brand.js"></script>
 </body>
 </html>

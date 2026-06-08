@@ -4,6 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Accuracy Eval - Presence</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0b0e12" />
+<script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
   /* Brand-matched to Presence. Dark theme, single mint-teal accent, pill buttons, 16px cards.
@@ -13,7 +18,16 @@
     --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
     --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
     --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e; --r:16px;
+    --stage:#06080b; --header-bg:rgba(11,14,18,.8);
   }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa; --bg2:#edf1f5; --panel:#ffffff; --card2:#f6f8fb;
+    --line:#e1e6ec; --txt:#0d1117; --mut:#586273; --faint:#8a94a3;
+    --good:#0a8f6e; --warn:#9a6a12; --bad:#c2403c;
+    --accent:#0a8f6e; --accent-soft:rgba(10,143,110,.10); --accent-ink:#ffffff;
+    --stage:#e6eaef; --header-bg:rgba(255,255,255,.82);
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
@@ -21,7 +35,10 @@
   a{color:var(--accent)}
 
   header{display:flex;gap:14px;align-items:center;padding:13px 20px;
-    border-bottom:1px solid var(--line);background:rgba(11,14,18,.8);backdrop-filter:blur(12px)}
+    border-bottom:1px solid var(--line);background:var(--header-bg);backdrop-filter:blur(12px)}
+  .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;
+    background:transparent;border:1px solid var(--line);cursor:pointer;font-size:16px;transition:background .2s,border-color .2s}
+  .iconbtn:hover{background:var(--card2);border-color:var(--faint)} .iconbtn i{color:var(--accent)}
   header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
   header h1 i{color:var(--accent);font-size:19px}
   header h1 span{color:var(--mut);font-weight:400}
@@ -32,7 +49,7 @@
   .wrap{display:grid;grid-template-columns:1fr 420px;gap:18px;padding:20px;align-items:start;max-width:1320px;margin:0 auto}
   @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
 
-  .stage{position:relative;background:#06080b;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
+  .stage{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
   video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
   .cue{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;background:rgba(6,8,11,.45);padding:24px}
@@ -75,6 +92,7 @@
 <header>
   <h1><i class="ph-fill ph-heartbeat"></i> Accuracy Eval <span>· emotion-prototype layer</span></h1>
   <a class="pill" href="./index.html"><i class="ph ph-arrow-left"></i> Back to demo</a>
+  <button id="themeToggle" class="iconbtn" type="button" aria-label="Toggle theme"></button>
 </header>
 <div class="wrap">
   <div>
@@ -107,5 +125,6 @@
   </div>
 </div>
 <script type="module" src="./eval.js"></script>
+<script src="/brand.js"></script>
 </body>
 </html>

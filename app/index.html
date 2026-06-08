@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Presence — live demo</title>
+<title>Presence - live demo</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0b0e12" />
+<meta property="og:title" content="Presence - live demo" />
+<meta property="og:description" content="A private, on-device body-language self-coach. Reads face, posture, voice, and pulse in real time." />
+<meta property="og:image" content="/assets/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
   /* Brand-matched to the Presence landing page. Dark theme locked, single mint-teal accent.
@@ -13,8 +22,17 @@
     --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
     --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
     --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e;
+    --stage:#06080b; --track:#1d2530; --header-bg:rgba(11,14,18,.8);
     --r:16px;
   }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa; --bg2:#edf1f5; --panel:#ffffff; --card2:#f6f8fb;
+    --line:#e1e6ec; --txt:#0d1117; --mut:#586273; --faint:#8a94a3;
+    --good:#0a8f6e; --warn:#9a6a12; --bad:#c2403c;
+    --accent:#0a8f6e; --accent-soft:rgba(10,143,110,.10); --accent-ink:#ffffff;
+    --stage:#e6eaef; --track:#dde3ea; --header-bg:rgba(255,255,255,.82);
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
@@ -22,7 +40,10 @@
   a{color:inherit;text-decoration:none}
 
   header{display:flex;align-items:center;gap:14px;padding:13px 20px;
-    border-bottom:1px solid var(--line);background:rgba(11,14,18,.8);backdrop-filter:blur(12px)}
+    border-bottom:1px solid var(--line);background:var(--header-bg);backdrop-filter:blur(12px)}
+  .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;
+    background:transparent;border:1px solid var(--line);cursor:pointer;font-size:16px;transition:background .2s,border-color .2s}
+  .iconbtn:hover{background:var(--card2);border-color:var(--faint)} .iconbtn i{color:var(--accent)}
   header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
   header h1 i{color:var(--accent);font-size:19px}
   header h1 span{color:var(--mut);font-weight:400}
@@ -34,7 +55,7 @@
   .wrap{display:grid;grid-template-columns:1fr 384px;gap:18px;padding:20px;align-items:start;max-width:1320px;margin:0 auto}
   @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
 
-  .stage{position:relative;background:#06080b;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
+  .stage{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
   video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 
   .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
@@ -70,7 +91,7 @@
 
   .state{margin-bottom:14px}
   .state .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
-  .bar{height:6px;background:#1d2530;border-radius:4px;overflow:hidden}
+  .bar{height:6px;background:var(--track);border-radius:4px;overflow:hidden}
   .bar>i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .4s cubic-bezier(.16,1,.3,1)}
   .caveat{font-size:11px;color:var(--mut);margin-top:4px}
   .contrib{font-size:10.5px;color:var(--faint);margin-top:3px}
@@ -91,9 +112,10 @@
 <header>
   <h1><i class="ph-fill ph-heartbeat"></i> Presence <span>· private body-language self-coach</span></h1>
   <div class="banner"><b>Coaches your own presence, on-device.</b> Decision-support, not a verdict. Probabilistic, with caveats.</div>
-  <span id="quality" class="pill" style="margin-left:auto">tracking —</span>
+  <span id="quality" class="pill" style="margin-left:auto">tracking</span>
   <a href="../" class="pill">Home</a>
   <a href="./eval.html" class="pill">Eval</a>
+  <button id="themeToggle" class="iconbtn" type="button" aria-label="Toggle theme"></button>
 </header>
 
 <div class="wrap">
@@ -144,5 +166,6 @@
 </div>
 
 <script type="module" src="./app.js"></script>
+<script src="/brand.js"></script>
 </body>
 </html>
