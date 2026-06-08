@@ -68,6 +68,25 @@ async function loadKB() {
   }
 }
 
+// Friendly camera errors
+class CameraError extends Error {
+  constructor(e) {
+    const m = {
+      NotAllowedError: "Camera permission denied. Click the camera icon in your browser's address bar → Allow, then reload. (Embedded preview panels usually block the camera — open this page in a real browser tab at http://localhost:8000/app/ instead.)",
+      NotFoundError: "No camera found. Connect a webcam and reload.",
+      NotReadableError: "Camera is in use by another app (Zoom, FaceTime, etc.). Close it and reload.",
+      OverconstrainedError: "Camera doesn't support the requested resolution.",
+      SecurityError: "Camera blocked — the page must be served over http://localhost or https://.",
+    }[e && e.name] || ("Camera error: " + (e && e.message || e));
+    super(m); this.name = "CameraError";
+  }
+}
+function showStageMessage(text, bad) {
+  const el = $("coach");
+  if (el) { el.textContent = text; el.style.color = bad ? "var(--bad)" : "var(--txt)"; }
+  statusEl.textContent = bad ? "camera error" : "running";
+}
+
 // ---------- Setup ----------
 async function init() {
   statusEl.textContent = "loading models…";
@@ -93,8 +112,18 @@ async function init() {
 }
 
 async function startCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 960, height: 720 }, audio: true });
+  // Camera is required; request it on its own so a mic denial can't block it.
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 960, height: 720 } });
+  } catch (e) {
+    throw new CameraError(e);   // surfaced with a friendly, actionable message
+  }
+  // Mic is optional — prosody/voice just stays off if denied.
+  try {
+    const a = await navigator.mediaDevices.getUserMedia({ audio: true });
+    a.getAudioTracks().forEach(t => stream.addTrack(t));
+  } catch { console.warn("mic unavailable — voice/prosody disabled"); }
   video.srcObject = stream;
   await video.play();
   canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -881,7 +910,11 @@ const FALLBACK_KB = { signals: [
 $("start").addEventListener("click", async () => {
   $("start").disabled = true;
   try { await loadKB(); await init(); await startCamera(); }
-  catch (e) { statusEl.textContent = "error: " + e.message; $("start").disabled = false; console.error(e); }
+  catch (e) {
+    console.error(e);
+    showStageMessage(e instanceof CameraError ? e.message : ("Startup error: " + (e.message || e)), true);
+    $("start").disabled = false;
+  }
 });
 $("calib").addEventListener("click", startCalibration);
 $("saveProf").addEventListener("click", saveProfile);
