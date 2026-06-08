@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Presence — private body-language self-coach</title>
+<meta name="description" content="Presence reads your face, posture, voice, and pulse in real time and coaches how you come across. On-device, private, and honest about uncertainty." />
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  /* Theme: dark, locked for the whole page. One accent (mint-teal). Radius rule: cards 16px, buttons full pill. */
+  :root{
+    --bg:#0b0e12; --bg2:#0e1218; --card:#141a21; --card2:#171e26;
+    --line:#232c37; --text:#e8eef5; --muted:#94a1b2; --faint:#5c6776;
+    --accent:#45d3ad; --accent-soft:rgba(69,211,173,.14); --accent-ink:#06130e;
+    --r-card:16px; --maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5; overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .accent{color:var(--accent)}
+  .muted{color:var(--muted)}
+
+  /* nav */
+  header{position:sticky;top:0;z-index:50;background:rgba(11,14,18,.78);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav{height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:-.01em;font-size:17px}
+  .brand i{color:var(--accent);font-size:20px}
+  .navlinks{display:flex;gap:28px;font-size:14px;color:var(--muted)}
+  .navlinks a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:600;font-size:14px;
+    padding:10px 18px;cursor:pointer;border:1px solid transparent;transition:transform .15s ease,background .2s ease,border-color .2s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:var(--accent-ink)}
+  .btn-primary:hover{background:#54e0bb}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--faint);background:var(--card)}
+  .nav-cta{display:none}
+  @media(min-width:760px){ .nav-cta{display:inline-flex} }
+  @media(max-width:759px){ .navlinks{display:none} }
+
+  /* hero */
+  .hero{min-height:calc(100dvh - 64px);display:grid;grid-template-columns:1fr;gap:48px;align-items:center;padding:48px 0 64px}
+  @media(min-width:920px){ .hero{grid-template-columns:1.05fr .95fr;gap:64px;padding:56px 0 72px} }
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
+    background:var(--accent-soft);border:1px solid rgba(69,211,173,.25);padding:6px 12px;border-radius:999px;margin-bottom:22px}
+  .eyebrow i{color:var(--accent);font-size:14px}
+  h1{font-size:clamp(40px,6vw,68px);line-height:1.02;letter-spacing:-.03em;font-weight:680}
+  .hero p.sub{margin-top:22px;font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:34ch}
+  .hero-cta{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn-lg{padding:13px 22px;font-size:15px}
+
+  /* hero live preview card (a real mini version of the app UI, not a screenshot) */
+  .preview{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+    border-radius:var(--r-card);padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .pv-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .pv-chip{font-size:11px;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+  .pv-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(69,211,173,.55);animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(69,211,173,.5)}70%{box-shadow:0 0 0 8px rgba(69,211,173,0)}100%{box-shadow:0 0 0 0 rgba(69,211,173,0)}}
+  .coach{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:14px;color:var(--text);margin-bottom:14px}
+  .coach b{color:var(--accent);font-weight:600}
+  .dims{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .dim{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:9px;text-align:center}
+  .dim .v{font-size:19px;font-weight:650}
+  .dim .l{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+  .bars{display:flex;flex-direction:column;gap:11px}
+  .bar-row{display:flex;flex-direction:column;gap:5px}
+  .bar-top{display:flex;justify-content:space-between;font-size:13px}
+  .bar-top span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
+  .track{height:6px;background:#1d2530;border-radius:4px;overflow:hidden}
+  .fill{height:100%;background:var(--accent);border-radius:4px;width:0;animation:grow 1.1s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes grow{to{width:var(--w)}}
+  .pv-foot{display:flex;gap:14px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .pv-foot i{color:var(--accent)}
+  .pv-cap{font-size:11px;color:var(--faint);margin-top:10px;text-align:center}
+
+  /* section scaffolding */
+  section{padding:84px 0;border-top:1px solid var(--line)}
+  .s-head{max-width:52ch;margin-bottom:44px}
+  .s-eyebrow{font-size:12.5px;color:var(--accent);letter-spacing:.04em;margin-bottom:12px}
+  h2{font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.02em;font-weight:660}
+  .s-head p{margin-top:14px;color:var(--muted);font-size:17px;max-width:48ch}
+
+  /* modalities bento */
+  .bento{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:760px){ .bento{grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr} .bento .big{grid-column:span 2;grid-row:span 2} }
+  .cell{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:22px;display:flex;flex-direction:column;gap:10px;transition:transform .2s ease,border-color .2s ease}
+  .cell:hover{transform:translateY(-3px);border-color:var(--faint)}
+  .cell i.ic{font-size:26px;color:var(--accent)}
+  .cell h3{font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .cell p{font-size:14px;color:var(--muted)}
+  .cell.big{justify-content:space-between;background:
+    radial-gradient(120% 90% at 100% 0%, rgba(69,211,173,.16), transparent 55%), var(--card2)}
+  .cell.big h3{font-size:22px}
+  .cell.grad-a{background:radial-gradient(110% 90% at 0% 100%, rgba(80,160,255,.18), transparent 60%), var(--card)}
+  .cell.grad-b{background:linear-gradient(160deg, rgba(69,211,173,.10), transparent 60%), var(--card)}
+  .mini-mesh{margin-top:auto;display:flex;gap:5px;flex-wrap:wrap;max-width:220px;opacity:.85}
+  .mini-mesh span{width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.5}
+
+  /* how it works: connected flow (distinct layout family) */
+  .flow{display:grid;grid-template-columns:1fr;gap:0}
+  @media(min-width:820px){ .flow{grid-template-columns:repeat(3,1fr)} }
+  .step{position:relative;padding:26px 24px}
+  @media(min-width:820px){ .step:not(:last-child){border-right:1px solid var(--line)} }
+  @media(max-width:819px){ .step:not(:last-child){border-bottom:1px solid var(--line)} }
+  .step .n{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .step .n i{font-size:18px}
+  .step h3{font-size:20px;font-weight:620;letter-spacing:-.01em;margin-bottom:8px}
+  .step p{color:var(--muted);font-size:15px;max-width:34ch}
+
+  /* science / honesty: editorial statement + real stats */
+  .science{display:grid;grid-template-columns:1fr;gap:48px;align-items:center}
+  @media(min-width:900px){ .science{grid-template-columns:1.1fr .9fr;gap:72px} }
+  .science .lead{font-size:clamp(24px,3.4vw,34px);line-height:1.18;letter-spacing:-.02em;font-weight:600}
+  .science .lead .accent{font-weight:600}
+  .science .body{margin-top:20px;color:var(--muted);font-size:16px;max-width:46ch}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:22px}
+  .stat .num{font-size:34px;font-weight:680;letter-spacing:-.02em}
+  .stat .lab{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.4}
+
+  /* privacy band (centered family) */
+  .privacy{text-align:center}
+  .privacy .inner{max-width:640px;margin:0 auto}
+  .privacy h2{margin-bottom:16px}
+  .privacy p{color:var(--muted);font-size:17px}
+  .pill-row{margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text);
+    border:1px solid var(--line);background:var(--card);padding:9px 16px;border-radius:999px}
+  .pill i{color:var(--accent);font-size:16px}
+
+  /* final cta */
+  .final{text-align:center;background:
+    radial-gradient(90% 140% at 50% 0%, rgba(69,211,173,.10), transparent 60%)}
+  .final h2{max-width:18ch;margin:0 auto 14px}
+  .final p{color:var(--muted);max-width:42ch;margin:0 auto 28px}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:14px}
+  .foot{display:flex;flex-direction:column;gap:20px;align-items:flex-start;justify-content:space-between}
+  @media(min-width:720px){ .foot{flex-direction:row;align-items:center} }
+  .foot-links{display:flex;gap:24px;flex-wrap:wrap}
+  .foot-links a:hover{color:var(--text)}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    .fill{width:var(--w)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="/"><i class="ph-fill ph-heartbeat"></i> Presence</a>
+      <div class="navlinks">
+        <a href="#how">How it works</a>
+        <a href="#science">Science</a>
+        <a href="#privacy">Privacy</a>
+      </div>
+      <a class="btn btn-primary nav-cta" href="/app/">Open the demo</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO: asymmetric split. Left copy, right real component preview. -->
+  <section class="hero" style="border-top:none">
+    <div>
+      <span class="eyebrow"><i class="ph-fill ph-shield-check"></i> On-device. Private by design.</span>
+      <h1>See how you<br>actually come across.</h1>
+      <p class="sub">Presence reads your face, posture, voice, and pulse in real time, then coaches your presence. Nothing leaves your device.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="/app/"><i class="ph ph-video-camera"></i> Open the demo</a>
+        <a class="btn btn-ghost btn-lg" href="#science">See the science</a>
+      </div>
+    </div>
+
+    <div class="preview reveal">
+      <div class="pv-head">
+        <span class="pv-chip"><span class="pv-dot"></span> Reading</span>
+        <span class="muted" style="font-size:12px">tracking 96%</span>
+      </div>
+      <div class="coach">You read as <b>engaged and open</b>. Your forward lean and steady eye contact are landing well. Keep this energy.</div>
+      <div class="dims">
+        <div class="dim"><div class="v">+0.42</div><div class="l">Valence</div></div>
+        <div class="dim"><div class="v">0.31</div><div class="l">Arousal</div></div>
+        <div class="dim"><div class="v">+0.55</div><div class="l">Dominance</div></div>
+      </div>
+      <div class="bars">
+        <div class="bar-row"><div class="bar-top"><span>Engagement / Interest</span><span>88%</span></div><div class="track"><div class="fill" style="--w:88%"></div></div></div>
+        <div class="bar-row"><div class="bar-top"><span>Rapport / Openness</span><span>71%</span></div><div class="track"><div class="fill" style="--w:71%;animation-delay:.12s"></div></div></div>
+        <div class="bar-row"><div class="bar-top"><span>Confidence / Dominance</span><span>64%</span></div><div class="track"><div class="fill" style="--w:64%;animation-delay:.24s"></div></div></div>
+      </div>
+      <div class="pv-foot">
+        <span><i class="ph-fill ph-heartbeat"></i> 72 bpm</span>
+        <span><i class="ph ph-microphone"></i> voice A/D/V</span>
+        <span><i class="ph ph-cube"></i> 478 face points</span>
+      </div>
+      <div class="pv-cap">Sample readout. Your session runs entirely in your browser.</div>
+    </div>
+  </section>
+
+  <!-- MODALITIES: bento, 5 cells, varied backgrounds -->
+  <section id="reads">
+    <div class="s-head reveal">
+      <div class="s-eyebrow">What it reads</div>
+      <h2>Five signals, read together.</h2>
+      <p>Any one cue is weak and easy to misread. Presence fuses five independent channels, so a read only shows when they agree.</p>
+    </div>
+    <div class="bento">
+      <div class="cell big reveal grad-b">
+        <div>
+          <i class="ph ph-smiley ic"></i>
+          <h3 style="margin-top:10px">Face, in full detail</h3>
+          <p>A 478-point mesh tracks the facial action units behind real expressions, then maps them to the seven core emotions as constellations, not single muscles.</p>
+        </div>
+        <div class="mini-mesh" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="cell reveal grad-a">
+        <i class="ph ph-person-simple-walk ic"></i>
+        <h3>Posture and gesture</h3>
+        <p>Full-body pose plus both hands: lean, openness, shrugs, and the gestures that carry meaning.</p>
+      </div>
+      <div class="cell reveal">
+        <i class="ph ph-waveform ic"></i>
+        <h3>Voice</h3>
+        <p>Pitch, energy, and timbre become dimensional arousal, dominance, and valence while you speak.</p>
+      </div>
+      <div class="cell reveal">
+        <i class="ph-fill ph-heartbeat ic"></i>
+        <h3>Pulse</h3>
+        <p>Your heart rate, read contactlessly from tiny color shifts in your skin. Harder to fake than a posed face.</p>
+      </div>
+      <div class="cell reveal grad-a">
+        <i class="ph ph-brain ic"></i>
+        <h3>The synthesis</h3>
+        <p>Signals vote into evidence-backed reads: engagement, rapport, confidence, discomfort.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS: connected three-stage flow -->
+  <section id="how">
+    <div class="s-head reveal">
+      <h2>Measure. Corroborate. Coach.</h2>
+      <p>The pipeline is built to earn confidence, not manufacture it.</p>
+    </div>
+    <div class="flow">
+      <div class="step reveal">
+        <div class="n"><i class="ph ph-scan"></i> Measure</div>
+        <h3>On-device, at video rate</h3>
+        <p>Face mesh, pose, hands, voice, and pulse, all computed in your browser. No frames are uploaded.</p>
+      </div>
+      <div class="step reveal">
+        <div class="n"><i class="ph ph-intersect-three"></i> Corroborate</div>
+        <h3>Many cues must agree</h3>
+        <p>A read only appears when several independent signals point the same way. A lone cue stays honestly tentative.</p>
+      </div>
+      <div class="step reveal">
+        <div class="n"><i class="ph ph-chat-circle-text"></i> Coach</div>
+        <h3>One clear, useful tip</h3>
+        <p>You get a plain-language read of how you are coming across, and one thing to adjust.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCIENCE / HONESTY: editorial statement + real stats -->
+  <section id="science">
+    <div class="science">
+      <div class="reveal">
+        <p class="lead">Most emotion AI overpromises. <span class="accent">Presence is built the other way.</span></p>
+        <p class="body">Every read carries its confidence and its caveat. The thresholds are grounded in the research the project cites, and the system will never claim to detect lies or hidden intent, because that science does not exist.</p>
+        <div class="hero-cta" style="margin-top:26px">
+          <a class="btn btn-ghost" href="/RESEARCH_REPORT.md"><i class="ph ph-file-text"></i> Read the research report</a>
+        </div>
+      </div>
+      <div class="stats reveal">
+        <div class="stat"><div class="num">478</div><div class="lab">facial landmarks tracked, live</div></div>
+        <div class="stat"><div class="num">43</div><div class="lab">signals across five modalities</div></div>
+        <div class="stat"><div class="num accent">r = .39</div><div class="lab">thin-slice predictive validity, the ceiling honest reading aims for</div></div>
+        <div class="stat"><div class="num">0</div><div class="lab">frames sent to any server</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY band -->
+  <section id="privacy" class="privacy">
+    <div class="inner reveal">
+      <i class="ph-fill ph-lock-key" style="font-size:34px;color:var(--accent)"></i>
+      <h2 style="margin-top:18px">Your camera never leaves the browser.</h2>
+      <p>No account. No upload. No server in the loop. The models run on your device, and the whole project is open source, end to end.</p>
+      <div class="pill-row">
+        <span class="pill"><i class="ph ph-desktop"></i> Runs on-device</span>
+        <span class="pill"><i class="ph ph-user-circle-minus"></i> No account</span>
+        <span class="pill"><i class="ph ph-github-logo"></i> Open source</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FINAL CTA -->
+<section class="final" style="border-top:1px solid var(--line)">
+  <div class="wrap reveal">
+    <h2>Practice in private. See yourself clearly.</h2>
+    <p>Open the live demo, allow your camera, and watch the reads in real time.</p>
+    <a class="btn btn-primary btn-lg" href="/app/"><i class="ph ph-video-camera"></i> Open the demo</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="/"><i class="ph-fill ph-heartbeat"></i> Presence</a>
+    <div class="foot-links">
+      <a href="#how">How it works</a>
+      <a href="#science">Science</a>
+      <a href="/RESEARCH_REPORT.md">Research</a>
+      <a href="/CITATIONS.md">Citations</a>
+      <a href="https://github.com/mitulpatelp112-svg/body-language-reader">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll-reveal via IntersectionObserver (no scroll listeners). Motivated: sequence reveal as storytelling.
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
