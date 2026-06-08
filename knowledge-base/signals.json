@@ -570,6 +570,19 @@
       "sources": ["DePaulo et al. 2003", "IEMOCAP 2008"]
     },
     {
+      "id": "physio_arousal",
+      "label": "Physiological arousal (rPPG heart rate)",
+      "ekman_category": "affect_display",
+      "modality": ["physiological"],
+      "measurable_via": "Remote photoplethysmography: forehead-ROI green-channel pulse -> heart rate vs personal baseline",
+      "observable": "Heart rate elevated above the person's resting baseline",
+      "interpretations": [
+        {"state": "elevated_arousal / stress", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["stable rPPG signal", "baseline established"], "caveats": "Physiological, harder to fake than posed expression — but webcam rPPG is noisy and confounded by motion, light, exertion. Arousal != valence."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["rPPG survey 2025 (WIREs)", "contactless stress sensing"]
+    },
+    {
       "id": "context_scene_modifier",
       "label": "Scene / situational context modifier",
       "ekman_category": null,
@@ -596,7 +609,7 @@
     },
     "discomfort_anxiety": {
       "label": "Discomfort / Anxiety",
-      "positive": {"adaptor_self_touch_face":0.9,"adaptor_hand_to_neck":0.8,"body_fidget":0.8,"face_lip_press":0.5,"face_lip_suck":0.5,"gaze_aversion":0.5,"posture_closed_arms":0.5,"face_blink_rate":0.5,"posture_shrug":0.3},
+      "positive": {"adaptor_self_touch_face":0.9,"adaptor_hand_to_neck":0.8,"body_fidget":0.8,"physio_arousal":0.7,"face_lip_press":0.5,"face_lip_suck":0.5,"gaze_aversion":0.5,"posture_closed_arms":0.5,"face_blink_rate":0.5,"posture_shrug":0.3},
       "negative": {"face_smile_genuine":0.6,"posture_expansive":0.5},
       "reliability": 4, "min_cues": 2,
       "evidence": "Self-directed displacement behaviours (self-touch, fidget) are reliably read as stress (signal value of stress behaviour, 2022); hands/eyes/mouth/torso are the most salient anxiety cues, r≈.50.",

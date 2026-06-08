@@ -17,7 +17,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, f1_score
 
 def main(path):
     rows = [json.loads(l) for l in open(path) if l.strip()]
@@ -39,8 +39,13 @@ def main(path):
         cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=0)
         y_cv = cross_val_predict(clf, Xs, y, cv=cv)
         acc = accuracy_score(y, y_cv)
+        macro_f1 = f1_score(y, y_cv, average="macro", zero_division=0)
         print("Cross-validated performance:\n")
         print(classification_report(y, y_cv, zero_division=0))
+        print(f">>> HEADLINE: accuracy={acc:.3f}  macro-F1={macro_f1:.3f}  (report these)\n")
+        # NOTE: for a DIMENSIONAL model (regressing arousal/dominance/valence) the field's metric is
+        # CCC (concordance correlation). Swap LogisticRegression for a regressor and score with CCC
+        # when you collect A/D/V labels (e.g., via the voice_adv backend). See RESEARCH_REPORT.md §3.
     else:
         acc = float("nan")
         print("Too few per-class samples for CV — accuracy not estimated.")

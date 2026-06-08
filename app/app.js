@@ -28,6 +28,11 @@ const SIG_ON = 0.20, SIG_OFF = 0.10;   // Schmitt-trigger thresholds (no flicker
 const f0Hist = [];             // recent pitch readings for median filtering
 const lumaCanvas = Object.assign(document.createElement("canvas"), {width:32, height:24});
 const lumaCtx = lumaCanvas.getContext("2d", { willReadFrequently: true });
+// rPPG (contactless heart rate / physiological arousal from forehead skin-color changes)
+const roiCanvas = Object.assign(document.createElement("canvas"), {width:30, height:18});
+const roiCtx = roiCanvas.getContext("2d", { willReadFrequently: true });
+const rppg = { buf: [], hr: 0, hrBase: null, arousal: 0, quality: 0 };  // buf: {t, g}
+let lastHrT = 0;
 // optional py-feat FACS backend (calibrated AUs/emotions) — off by default
 const BACKEND_URL = "http://localhost:8001";
 let backendOn = false, backendBusy = false, backendEmotions = null;
@@ -37,7 +42,10 @@ const grabCtx = grabCanvas.getContext("2d");
 let audioCtx, analyser, audioBuf, audioOn = false;
 let pitchBase = null, energyBase = null;
 const voicedHist = [];         // recent voiced flags for pause/disfluency
-const prosody = { voiced: 0, pitchRise: 0, energyRise: 0, arousal: 0, disfluency: 0 };
+const prosody = { voiced: 0, pitchRise: 0, energyRise: 0, arousal: 0, disfluency: 0,
+                  v: 0, a: 0, d: 0, jitter: 0, shimmer: 0, centroid: 0 };  // dimensional A/D/V
+const ampHist = [];            // recent RMS for shimmer
+let freqBuf = null;            // spectral frame for centroid
 // temporal smoothing + render throttle (fixes "moving too fast to read")
 const SMOOTH = { dims: {v:0,a:0,d:0}, states: new Map(), signals: new Map() };
 const SM_A = 0.18;             // EMA factor for displayed values
@@ -145,19 +153,40 @@ function analyzeAudio() {
   if (voiced) {
     const f0raw = autocorrelate(audioBuf, audioCtx.sampleRate); // fundamental frequency
     if (f0raw > 0) {
-      f0Hist.push(f0raw); if (f0Hist.length > 5) f0Hist.shift();
+      f0Hist.push(f0raw); if (f0Hist.length > 6) f0Hist.shift();
       const f0 = median(f0Hist);                                // median filter kills octave jumps
       pitchBase = pitchBase == null ? f0 : 0.98*pitchBase + 0.02*f0;
       prosody.pitchRise = clip((f0 - pitchBase) / 60);          // semitone-ish rise vs personal pitch
+      // jitter: cycle-to-cycle pitch variation (voice instability ~ tension)
+      if (f0Hist.length >= 3) { let j=0; for (let i=1;i<f0Hist.length;i++) j += Math.abs(f0Hist[i]-f0Hist[i-1]);
+        prosody.jitter = clip((j/(f0Hist.length-1)) / 15); }
     }
     energyBase = energyBase == null ? rms : 0.97*energyBase + 0.03*rms;
     prosody.energyRise = clip((rms - energyBase) / 0.05);
-    prosody.arousal = clip(0.6*prosody.pitchRise + 0.6*prosody.energyRise);
-    // disfluency proxy: choppy voicing (many on/off transitions) while speaking
+    // shimmer: amplitude variation
+    ampHist.push(rms); if (ampHist.length > 8) ampHist.shift();
+    if (ampHist.length >= 3) { let s=0; for (let i=1;i<ampHist.length;i++) s += Math.abs(ampHist[i]-ampHist[i-1]);
+      prosody.shimmer = clip((s/(ampHist.length-1)) / 0.03); }
+    // spectral centroid (brightness ~ arousal/tension)
+    if (!freqBuf) freqBuf = new Float32Array(analyser.frequencyBinCount);
+    analyser.getFloatFrequencyData(freqBuf);
+    let num=0, den=0; const ny = audioCtx.sampleRate/2;
+    for (let i=0;i<freqBuf.length;i++){ const mag=Math.pow(10, freqBuf[i]/20); const hz=i/freqBuf.length*ny; num+=hz*mag; den+=mag; }
+    prosody.centroid = den>0 ? clip((num/den)/3000) : 0;        // normalized 0..1 (~3kHz cap)
     let trans = 0; for (let i=1;i<voicedHist.length;i++) if (voicedHist[i]!==voicedHist[i-1]) trans++;
     prosody.disfluency = clip((trans / 20) - 0.2);
+
+    // ---- dimensional A/D/V from acoustic features (interim model; wav2vec2 backend = backend/voice_adv.py) ----
+    // Arousal is the most reliably voice-encoded dimension (energy + pitch level/variability + brightness)
+    prosody.a = clip(0.45*prosody.energyRise + 0.35*prosody.pitchRise + 0.25*prosody.centroid + 0.2*prosody.jitter);
+    // Dominance: loud + low-pitched + steady (low jitter)
+    prosody.d = clip(0.5*prosody.energyRise + 0.3*(1-clip(prosody.pitchRise)) - 0.3*prosody.jitter - 0.2*prosody.shimmer);
+    // Valence is weakly voice-encoded: smoother voice (low jitter/shimmer) + moderate brightness leans positive
+    prosody.v = clip(0.4 - 0.5*prosody.jitter - 0.4*prosody.shimmer + 0.2*prosody.centroid) - 0.2;
+    prosody.arousal = prosody.a;                                // back-compat with prosody_pitch_rise signal
   } else {
     prosody.arousal *= 0.9; prosody.pitchRise *= 0.9; prosody.energyRise *= 0.9;
+    prosody.a *= 0.9; prosody.d *= 0.9; prosody.v *= 0.9;
   }
 }
 // autocorrelation pitch detector (returns Hz, 0 if unvoiced/unclear)
@@ -171,6 +200,48 @@ function autocorrelate(buf, sr) {
     if (c > best) { best = c; bestOff = off; }
   }
   return bestOff > 0 ? sr / bestOff : 0;
+}
+
+// ---------- rPPG: contactless heart rate / physiological arousal ----------
+// Samples mean green channel of a forehead ROI over time; blood volume pulses modulate skin color.
+function sampleRppg(face, t) {
+  if (!face.faceLandmarks || !face.faceLandmarks[0]) return;
+  const lm = face.faceLandmarks[0];
+  const idx = [10, 67, 297, 109, 338, 151];   // forehead landmarks
+  let minX=1, minY=1, maxX=0, maxY=0;
+  for (const i of idx) { const p = lm[i]; minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); }
+  const vw = video.videoWidth, vh = video.videoHeight;
+  const sx=minX*vw, sy=minY*vh, sw=Math.max(4,(maxX-minX)*vw), sh=Math.max(3,(maxY-minY)*vh);
+  try {
+    roiCtx.drawImage(video, sx, sy, sw, sh, 0, 0, roiCanvas.width, roiCanvas.height);
+    const d = roiCtx.getImageData(0,0,roiCanvas.width,roiCanvas.height).data;
+    let g=0, n=0; for (let i=0;i<d.length;i+=4){ g+=d[i+1]; n++; }
+    rppg.buf.push({ t, g: g/n });
+    while (rppg.buf.length && t - rppg.buf[0].t > 10000) rppg.buf.shift();  // keep 10s window
+  } catch {}
+}
+function computeHR(t) {
+  if (t - lastHrT < 1000) return; lastHrT = t;            // update ~1 Hz
+  const b = rppg.buf;
+  const dur = b.length ? (b[b.length-1].t - b[0].t)/1000 : 0;
+  if (b.length < 60 || dur < 5) { rppg.quality = 0; return; }
+  const fs = b.length / dur;
+  const vals = b.map(x => x.g), mean = vals.reduce((a,c)=>a+c,0)/vals.length;
+  const sig = vals.map(v => v - mean);
+  const minLag = Math.floor(fs/4), maxLag = Math.floor(fs/0.7);  // 42–240 bpm band
+  let best=0, bestLag=-1, energy=0;
+  for (let i=0;i<sig.length;i++) energy += sig[i]*sig[i];
+  for (let lag=minLag; lag<=maxLag && lag<sig.length; lag++) {
+    let c=0; for (let i=0;i<sig.length-lag;i++) c += sig[i]*sig[i+lag];
+    if (c > best) { best=c; bestLag=lag; }
+  }
+  if (bestLag > 0) {
+    const hr = 60 * fs / bestLag;
+    rppg.hr = rppg.hr ? 0.8*rppg.hr + 0.2*hr : hr;
+    rppg.quality = clip(best/(energy||1) * 2);
+    rppg.hrBase = rppg.hrBase == null ? rppg.hr : 0.995*rppg.hrBase + 0.005*rppg.hr;
+    rppg.arousal = clip((rppg.hr - (rppg.hrBase || rppg.hr))/15) * rppg.quality;
+  }
 }
 
 function startCalibration() { calibrating = 90; baseline = null; statusEl.textContent = "calibrating baseline… hold neutral"; }
@@ -203,6 +274,7 @@ function loop() {
     const hands = handLM.detectForVideo(video, t);
     const qa = frameQuality(face, pose);
     frameQ = frameQ + 0.2*(qa.q - frameQ);          // smooth the quality signal
+    sampleRppg(face, t); computeHR(t);              // contactless heart-rate / physiological arousal
     let feat = extractFeatures(face, pose, hands);
     if (feat) feat = smoothFeatures(feat);          // denoise features before interpretation
     drawOverlay(face, pose, hands);
@@ -461,7 +533,9 @@ function activations(f) {
     gesture_pointing: f.pointing,
     // voice / prosody (only when speaking)
     prosody_pitch_rise: prosody.voiced ? clip(prosody.arousal) : 0,
-    prosody_pause_disfluency: prosody.voiced ? clip(prosody.disfluency) : 0
+    prosody_pause_disfluency: prosody.voiced ? clip(prosody.disfluency) : 0,
+    // physiological (rPPG) — contactless, harder to fake than posed expression
+    physio_arousal: rppg.quality > 0.25 ? clip(rppg.arousal) : 0
   };
 }
 // Evidence-backed constructs: multiple signals vote; confidence scales with corroboration.
@@ -577,11 +651,14 @@ function estimateDims(f, act) {
   a += (act.face_brow_raise||0)*0.4 + (act.face_eye_widen||0)*0.6 + (act.face_jaw_drop||0)*0.5
      + (act.adaptor_self_touch_face||0)*0.4 + (act.regulator_head_nod||0)*0.3
      + (act.body_fidget||0)*0.5 + (act.posture_shrug||0)*0.3 + (act.gesture_hands_together||0)*0.2
-     + (act.prosody_pitch_rise||0)*0.6;     // vocal arousal is a strong, independent arousal cue
+     + (act.prosody_pitch_rise||0)*0.6      // vocal arousal is a strong, independent arousal cue
+     + (act.physio_arousal||0)*0.5;          // contactless physiological arousal (rPPG)
   d += (act.posture_lean_forward||0)*0.5 + (act.face_nose_wrinkle||0)*0.2
      + (act.posture_expansive||0)*0.6 + (act.posture_hands_on_hips||0)*0.5 + (act.gesture_pointing||0)*0.4
      - (act.gaze_aversion||0)*0.3 - (act.face_eye_widen||0)*0.3 - (act.posture_closed_arms||0)*0.2
      - (act.posture_shrug||0)*0.4 - (act.adaptor_hand_to_neck||0)*0.3;
+  // fuse independent voice A/D/V estimate (only while speaking) — multimodal dimensional fusion
+  if (prosody.voiced) { v += prosody.v*0.4; a += prosody.a*0.4; d += prosody.d*0.4; }
   return { v: deadzone(clamp(v), 0.07), a: deadzone(clamp(a), 0.06), d: deadzone(clamp(d), 0.07) };
 }
 
@@ -634,11 +711,36 @@ function updateQualityUI(qa) {
   el.textContent = qa.reasons.length ? `tracking ${pct}% · ${qa.reasons.join(", ")}` : `tracking ${pct}%`;
 }
 
+// ---------- Coach reasoning (on-device; optional LLM backend = backend/explain.py) ----------
+// Self-coaching framing (the chosen product lane): actionable feedback on YOUR OWN presence.
+const COACH = {
+  "Engagement / Interest": "Strong engagement — you're leaning in and tracking. Keep this energy.",
+  "Disengagement / Withdrawal": "Reading as pulled-back. Lean in, uncross, and re-engage eye contact.",
+  "Discomfort / Anxiety": "Signs of tension. Slow your pace, drop your shoulders, steady your hands.",
+  "Confidence / Dominance": "Confident, expansive presence. Keep it warm so it doesn't overpower.",
+  "Rapport / Openness": "Warm and open — this is what builds rapport. Nice.",
+  "happiness": "Positive affect reads clearly.", "sadness": "A low/heavy read — breathe and reset.",
+  "anger": "Reads tense/hard — soften the brow and jaw.", "surprise": "Big reaction registered.",
+};
+function generateInsight(states, dims) {
+  if (frameQ < 0.4) return "Tracking too low for a read — face the camera in good light.";
+  const top = states.find(s => !s.weak) || states[0];
+  if (!top || top.p < 0.25) return "Neutral / steady — no strong signal right now.";
+  let line = COACH[top.state] || `Reading: ${top.state}.`;
+  const drivers = (top.contributors || []).slice(0, 3).join(", ");
+  if (drivers) line += `  ·  cues: ${drivers}`;
+  return line;
+}
+
 // ---------- Render ----------
 function render(signals, states, dims) {
   $("valence").textContent = dims.v.toFixed(2);
   $("arousal").textContent = dims.a.toFixed(2);
   $("domin").textContent = dims.d.toFixed(2);
+  const coach = $("coach"); if (coach) coach.textContent = generateInsight(states, dims);
+  const vit = $("vitals");
+  if (vit) vit.textContent = rppg.quality > 0.3 ? `♥ ~${Math.round(rppg.hr)} bpm (rPPG${prosody.voiced ? " · 🎤 voice A/D/V" : ""})`
+                                                : (prosody.voiced ? "🎤 voice A/D/V active" : "");
 
   // precision: commit to a primary read only when confident AND clearly ahead of #2 (else abstain)
   const prim = $("primary");
@@ -744,6 +846,7 @@ const FALLBACK_KB = { signals: [
   {id:"face_jaw_jut",label:"Jaw thrust (AU29)",inference_reliability:2,interpretations:[{state:"tension / defiance",prior_confidence:0.3,evidence:"weak",caveats:"Also bite alignment/habit."}]},
   {id:"face_cheek_puff",label:"Cheek puff",inference_reliability:2,interpretations:[{state:"exasperation / relief (sigh)",prior_confidence:0.3,evidence:"weak",caveats:"Also blowing/exertion."}]},
   {id:"face_blink_rate",label:"Elevated blink rate (AU45)",inference_reliability:2,interpretations:[{state:"elevated_arousal / stress",prior_confidence:0.3,evidence:"weak",caveats:"Dry eyes, screens, contacts raise blink too. Very low rate = concentration."}]},
+  {id:"physio_arousal",label:"Physiological arousal (rPPG heart rate)",inference_reliability:3,interpretations:[{state:"elevated_arousal / stress",prior_confidence:0.4,evidence:"moderate",caveats:"Physiological, harder to fake — but webcam rPPG is noisy (motion/light/exertion). Arousal != valence."}]},
   {id:"emotion_happiness",label:"Happiness prototype (AU6+12)",inference_reliability:4,interpretations:[{state:"happiness",prior_confidence:0.7,evidence:"moderate",prototype:true,caveats:"Constellation is stronger than single AUs, but can still be posed."}]},
   {id:"emotion_sadness",label:"Sadness prototype (AU1+4+15+17)",inference_reliability:3,interpretations:[{state:"sadness",prior_confidence:0.6,evidence:"moderate",prototype:true,caveats:"Brief displays; corroborate with voice/posture."}]},
   {id:"emotion_surprise",label:"Surprise prototype (AU1+2+5+26)",inference_reliability:3,interpretations:[{state:"surprise",prior_confidence:0.6,evidence:"moderate",prototype:true,caveats:"Very brief; can blend into fear."}]},
@@ -768,7 +871,7 @@ const FALLBACK_KB = { signals: [
   {id:"gesture_pointing",label:"Pointing / index extension",inference_reliability:3,interpretations:[{state:"emphasis / assertion",prior_confidence:0.4,evidence:"moderate",caveats:"Illustrator; can read as aggressive in some cultures."}]}
 ], constructs: {
   engagement:{label:"Engagement / Interest",positive:{posture_lean_forward:1.0,regulator_head_nod:0.8,regulator_head_tilt:0.6,gesture_open_palm:0.5,face_brow_raise:0.4,prosody_pitch_rise:0.5},negative:{posture_lean_back:0.8,gaze_aversion:0.6,posture_closed_arms:0.4,body_fidget:0.3},reliability:4,min_cues:2,evidence:"Thin-slice behavior predicts engagement at r≈.39 (Ambady & Rosenthal 1992); multimodal engagement detection ≈90%+"},
-  discomfort_anxiety:{label:"Discomfort / Anxiety",positive:{adaptor_self_touch_face:0.9,adaptor_hand_to_neck:0.8,body_fidget:0.8,face_lip_press:0.5,face_lip_suck:0.5,gaze_aversion:0.5,posture_closed_arms:0.5,face_blink_rate:0.5,posture_shrug:0.3},negative:{face_smile_genuine:0.6,posture_expansive:0.5},reliability:4,min_cues:2,evidence:"Self-directed displacement behaviours reliably read as stress; salient cues r≈.50"},
+  discomfort_anxiety:{label:"Discomfort / Anxiety",positive:{adaptor_self_touch_face:0.9,adaptor_hand_to_neck:0.8,body_fidget:0.8,physio_arousal:0.7,face_lip_press:0.5,face_lip_suck:0.5,gaze_aversion:0.5,posture_closed_arms:0.5,face_blink_rate:0.5,posture_shrug:0.3},negative:{face_smile_genuine:0.6,posture_expansive:0.5},reliability:4,min_cues:2,evidence:"Self-directed displacement behaviours reliably read as stress; salient cues r≈.50"},
   confidence_dominance:{label:"Confidence / Dominance",positive:{posture_expansive:1.0,posture_hands_on_hips:0.9,gesture_pointing:0.5,prosody_pitch_rise:0.3,regulator_head_nod:0.3},negative:{posture_shrug:0.7,adaptor_self_touch_face:0.5,gaze_aversion:0.5,posture_closed_arms:0.4},reliability:3,min_cues:2,evidence:"Dominance display is a multi-cue constellation: expansiveness + hands-on-hips + head tilt + no smile (Witkower & Tracy 2019)"},
   disengagement:{label:"Disengagement / Withdrawal",positive:{posture_lean_back:1.0,gaze_aversion:0.7,posture_closed_arms:0.6,body_fidget:0.4,posture_shrug:0.3},negative:{posture_lean_forward:0.8,regulator_head_nod:0.5,face_smile_genuine:0.4},reliability:3,min_cues:2,evidence:"Contractive posture + gaze aversion signal low involvement (Mehrabian immediacy)"},
   rapport_openness:{label:"Rapport / Openness",positive:{face_smile_genuine:0.9,regulator_head_nod:0.7,gesture_open_palm:0.7,posture_lean_forward:0.6,regulator_head_tilt:0.4},negative:{posture_closed_arms:0.6,gaze_aversion:0.5,face_lip_press:0.3},reliability:3,min_cues:2,evidence:"Rapport judged from expressivity/attention/positivity/coordination; low rapport detectable at precision 0.7 (Grahe & Bernieri 1999)"}

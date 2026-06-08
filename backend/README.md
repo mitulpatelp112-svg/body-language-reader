@@ -1,3 +1,18 @@
+# Backend services (all optional — the app runs fully on-device without them)
+
+| File | Port | Upgrades | Needs |
+|---|---|---|---|
+| `server.py` | 8001 | Calibrated FACS action units (py-feat) vs MediaPipe blendshapes | py-feat |
+| `voice_adv.py` | 8002 | Real **wav2vec2 A/D/V** voice emotion (MSP-Podcast SOTA) vs interim acoustic heuristic | transformers + torch |
+| `explain.py` | 8003 | **Claude** coaching reasoning vs on-device template insight | `ANTHROPIC_API_KEY` |
+| `train.py` | — | Trains `app/model.json` from logged data; reports accuracy + macro-F1 | scikit-learn |
+
+Each is a standalone scaffold; turn it on once `eval.html` shows it actually beats the on-device
+path. Requirements: `requirements.txt` (FACS), `requirements-voice.txt`, `requirements-explain.txt`,
+`requirements-train.txt`.
+
+---
+
 # FACS Backend (py-feat) — calibrated action units
 
 The browser app uses MediaPipe blendshapes (fast, on-device, but *geometric approximations* of
