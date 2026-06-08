@@ -3,42 +3,78 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Accuracy Eval — Body-Language Reader</title>
+<title>Accuracy Eval - Presence</title>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
-  :root { --bg:#0e1116; --panel:#161b22; --line:#2a313c; --txt:#e6edf3; --mut:#8b949e;
-          --good:#3fb950; --warn:#d29922; --bad:#f85149; --accent:#58a6ff; }
-  * { box-sizing:border-box; }
-  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
-  header { padding:12px 18px; border-bottom:1px solid var(--line); display:flex; gap:14px; align-items:center; }
-  header h1 { font-size:16px; margin:0; }
-  a { color:var(--accent); }
-  .wrap { display:grid; grid-template-columns:1fr 420px; gap:16px; padding:16px; align-items:start; }
-  .stage { position:relative; background:#000; border-radius:10px; overflow:hidden; aspect-ratio:4/3; }
-  video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-  .cue { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-         text-align:center; background:rgba(0,0,0,.35); }
-  .cue .big { font-size:42px; font-weight:700; text-transform:capitalize; }
-  .cue .sub { font-size:16px; color:#cdd9e5; margin-top:6px; }
-  .cue .count { font-size:64px; font-weight:800; }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
-  .panel h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 10px; }
-  button { background:var(--accent); color:#06121f; border:0; padding:9px 16px; border-radius:6px; font-weight:600; cursor:pointer; }
-  button:disabled { opacity:.5; cursor:default; }
-  button.sec { background:#21262d; color:var(--txt); border:1px solid var(--line); }
-  table { border-collapse:collapse; font-size:12px; width:100%; }
-  th,td { border:1px solid var(--line); padding:4px 6px; text-align:center; }
-  th { color:var(--mut); font-weight:600; }
-  td.diag { background:rgba(63,185,80,.18); font-weight:700; }
-  td.hit { background:rgba(63,185,80,.10); }
-  .big-acc { font-size:28px; font-weight:800; }
-  .mut { color:var(--mut); font-size:12px; }
-  .live { font-size:13px; }
+  /* Brand-matched to Presence. Dark theme, single mint-teal accent, pill buttons, 16px cards.
+     Element IDs and classes kept stable for eval.js. */
+  :root{
+    --bg:#0b0e12; --bg2:#0e1218; --panel:#141a21; --card2:#171e26;
+    --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
+    --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
+    --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e; --r:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+
+  header{display:flex;gap:14px;align-items:center;padding:13px 20px;
+    border-bottom:1px solid var(--line);background:rgba(11,14,18,.8);backdrop-filter:blur(12px)}
+  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  header h1 i{color:var(--accent);font-size:19px}
+  header h1 span{color:var(--mut);font-weight:400}
+  a.pill{margin-left:auto;font-size:12px;color:var(--accent);border:1px solid rgba(69,211,173,.35);
+    padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:7px}
+  a.pill:hover{background:var(--accent-soft)}
+
+  .wrap{display:grid;grid-template-columns:1fr 420px;gap:18px;padding:20px;align-items:start;max-width:1320px;margin:0 auto}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .stage{position:relative;background:#06080b;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
+  video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .cue{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;background:rgba(6,8,11,.45);padding:24px}
+  .cue .big{font-size:42px;font-weight:700;letter-spacing:-.02em;text-transform:capitalize}
+  .cue .sub{font-size:16px;color:#c2cdd9;margin-top:8px;max-width:42ch}
+  .cue .count{font-size:64px;font-weight:800;color:var(--accent)}
+
+  .controls{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  button{background:var(--accent);color:var(--accent-ink);border:1px solid transparent;
+    padding:10px 16px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;
+    transition:transform .15s ease,background .2s ease,border-color .2s ease}
+  button:hover:not(:disabled){background:#56e0bc}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:default}
+  button.sec{background:transparent;color:var(--txt);border-color:var(--line)}
+  button.sec:hover:not(:disabled){background:var(--card2);border-color:var(--faint)}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+  .panel h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 12px;font-weight:600}
+  .panel p{margin:0 0 10px}
+
+  table{border-collapse:separate;border-spacing:0;font-size:12px;width:100%;margin-top:8px;
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px 7px;text-align:center;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  th:last-child,td:last-child{border-right:none}
+  th{color:var(--mut);font-weight:600;background:var(--bg2)}
+  td.diag{background:rgba(69,211,173,.20);font-weight:700;color:var(--good)}
+  td.hit{background:rgba(69,211,173,.09)}
+  .big-acc{font-size:30px;font-weight:750;letter-spacing:-.02em}
+  .mut{color:var(--mut);font-size:12px}
+  .live{font-size:13px}
+  #status{color:var(--mut);font-size:12px}
+  #livepred{color:var(--accent);font-weight:600;text-transform:capitalize}
+
+  @media(prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
 <header>
-  <h1>Accuracy Eval <span class="mut">· emotion-prototype layer</span></h1>
-  <a href="./index.html">◂ back to live demo</a>
+  <h1><i class="ph-fill ph-heartbeat"></i> Accuracy Eval <span>· emotion-prototype layer</span></h1>
+  <a class="pill" href="./index.html"><i class="ph ph-arrow-left"></i> Back to demo</a>
 </header>
 <div class="wrap">
   <div>
@@ -47,26 +83,26 @@
       <div id="cue" class="cue"><div class="big">Accuracy Eval</div>
         <div class="sub">You'll be asked to perform 7 expressions. We record what the model predicts, then score it.</div></div>
     </div>
-    <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
-      <button id="start">Start eval</button>
+    <div class="controls">
+      <button id="start"><i class="ph ph-play"></i> Start eval</button>
       <button id="dl" class="sec" disabled>Download results CSV</button>
       <button id="dlData" class="sec" disabled>Download dataset (JSONL)</button>
-      <span id="status" class="mut">idle</span>
+      <span id="status">idle</span>
     </div>
-    <div class="live mut" style="margin-top:8px;">Live top prediction: <b id="livepred">—</b></div>
+    <div class="live mut" style="margin-top:10px">Live top prediction: <b id="livepred">—</b></div>
   </div>
   <div>
-    <div class="panel" style="margin-bottom:14px;">
+    <div class="panel" style="margin-bottom:16px">
       <h2>Result</h2>
-      <div id="result"><span class="mut">Run the eval to see accuracy + confusion matrix.</span></div>
+      <div id="result"><span class="mut">Run the eval to see accuracy and the confusion matrix.</span></div>
     </div>
     <div class="panel">
       <h2>How this works</h2>
       <p class="mut">For each emotion you get a 3s prep cue, then a 2s capture window. The model's most
-      frequent prediction in that window is the prediction for that trial. Accuracy = correct / total;
-      the confusion matrix shows where it confuses one emotion for another (fear↔surprise is the classic one).</p>
+      frequent prediction in that window is the prediction for that trial. Accuracy is correct over total;
+      the confusion matrix shows where it confuses one emotion for another (fear and surprise is the classic pair).</p>
       <p class="mut">This measures the <b>emotion-prototype layer</b> (AU constellations) under deliberate
-      posing — a controlled baseline, not in-the-wild accuracy. Extend later with recorded labeled clips.</p>
+      posing, a controlled baseline rather than in-the-wild accuracy. Extend it later with recorded labeled clips.</p>
     </div>
   </div>
 </div>
