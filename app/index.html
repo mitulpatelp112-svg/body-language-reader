@@ -3,48 +3,97 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Body-Language Reader — Live Demo</title>
+<title>Presence — live demo</title>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
-  :root { --bg:#0e1116; --panel:#161b22; --line:#2a313c; --txt:#e6edf3; --mut:#8b949e;
-          --good:#3fb950; --warn:#d29922; --bad:#f85149; --accent:#58a6ff; }
-  * { box-sizing:border-box; }
-  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
-  header { padding:12px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; }
-  header h1 { font-size:16px; margin:0; font-weight:600; }
-  .banner { background:#1f2733; border:1px solid var(--warn); color:#e3b341; font-size:12px;
-            padding:6px 10px; border-radius:6px; }
-  .wrap { display:grid; grid-template-columns: 1fr 380px; gap:16px; padding:16px; align-items:start; }
-  .stage { position:relative; background:#000; border-radius:10px; overflow:hidden; aspect-ratio:4/3; }
-  video, canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
-  .panel h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 10px; }
-  .state { margin-bottom:12px; }
-  .state .row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px; }
-  .bar { height:7px; background:#222a35; border-radius:4px; overflow:hidden; }
-  .bar > i { display:block; height:100%; background:var(--accent); }
-  .caveat { font-size:11px; color:var(--mut); margin-top:3px; }
-  .contrib { font-size:10px; color:#6e7681; margin-top:2px; }
-  .sig { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; border-bottom:1px solid #1d242e; }
-  .sig .nm { color:var(--txt); } .sig .v { color:var(--mut); font-variant-numeric:tabular-nums; }
-  .dim { display:flex; gap:10px; margin-bottom:12px; }
-  .dim div { flex:1; background:#10151c; border:1px solid var(--line); border-radius:6px; padding:6px 8px; text-align:center; }
-  .dim b { display:block; font-size:18px; }
-  .dim span { font-size:10px; color:var(--mut); text-transform:uppercase; }
-  button { background:var(--accent); color:#06121f; border:0; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer; }
-  button.sec { background:#21262d; color:var(--txt); border:1px solid var(--line); }
-  #status { font-size:12px; color:var(--mut); }
-  select { background:#10151c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:5px; }
-  .legend { font-size:11px; color:var(--mut); }
-  .pill { font-size:10px; padding:1px 6px; border-radius:10px; border:1px solid var(--line); }
+  /* Brand-matched to the Presence landing page. Dark theme locked, single mint-teal accent.
+     Radius rule: cards 16px, buttons full pill. CSS var names kept stable for app.js inline styles. */
+  :root{
+    --bg:#0b0e12; --bg2:#0e1218; --panel:#141a21; --card2:#171e26;
+    --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
+    --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
+    --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e;
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  header{display:flex;align-items:center;gap:14px;padding:13px 20px;
+    border-bottom:1px solid var(--line);background:rgba(11,14,18,.8);backdrop-filter:blur(12px)}
+  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  header h1 i{color:var(--accent);font-size:19px}
+  header h1 span{color:var(--mut);font-weight:400}
+  .banner{background:var(--accent-soft);border:1px solid rgba(69,211,173,.22);color:#b9c6cf;
+    font-size:12px;padding:7px 12px;border-radius:999px}
+  .banner b{color:var(--accent);font-weight:600}
+  @media(max-width:860px){ header h1 span{display:none} .banner{display:none} }
+
+  .wrap{display:grid;grid-template-columns:1fr 384px;gap:18px;padding:20px;align-items:start;max-width:1320px;margin:0 auto}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .stage{position:relative;background:#06080b;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
+  video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+
+  button{background:var(--accent);color:var(--accent-ink);border:1px solid transparent;
+    padding:10px 16px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:7px;transition:transform .15s ease,background .2s ease,border-color .2s ease}
+  button i{font-size:15px}
+  button:hover{background:#56e0bc}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:default}
+  button.sec{background:transparent;color:var(--txt);border-color:var(--line)}
+  button.sec:hover:not(:disabled){background:var(--card2);border-color:var(--faint)}
+
+  select{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-family:inherit;font-size:13px}
+  .legend{font-size:12px;color:var(--mut);display:inline-flex;align-items:center;gap:7px}
+  .legend input{accent-color:var(--accent)}
+  #status,#backendStat{font-size:12px;color:var(--mut)}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+  .panel h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 12px;font-weight:600}
+
+  #coach{font-size:14px;line-height:1.5;background:var(--bg2);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-bottom:10px;min-height:40px}
+  #vitals{font-size:11px;color:var(--mut);margin-bottom:16px;min-height:14px;display:flex;gap:14px}
+
+  .dim{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+  .dim>div{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+  .dim b{display:block;font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+  .dim span{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;display:block}
+
+  #primary{font-size:15px;font-weight:600;margin-bottom:14px;color:var(--accent)}
+
+  .state{margin-bottom:14px}
+  .state .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .bar{height:6px;background:#1d2530;border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .4s cubic-bezier(.16,1,.3,1)}
+  .caveat{font-size:11px;color:var(--mut);margin-top:4px}
+  .contrib{font-size:10.5px;color:var(--faint);margin-top:3px}
+  .sig{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .sig:last-child{border-bottom:none}
+  .sig .nm{color:var(--txt)} .sig .v{color:var(--mut);font-variant-numeric:tabular-nums}
+
+  .pill{font-size:10.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+  a.pill{color:var(--accent);border-color:rgba(69,211,173,.35)}
+  a.pill:hover{background:var(--accent-soft)}
+
   .e-strong{color:var(--good)} .e-moderate{color:var(--accent)} .e-weak{color:var(--warn)} .e-folklore{color:var(--bad)}
+
+  @media(prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
 <header>
-  <h1>Presence <span style="color:var(--mut);font-weight:400">· private body-language self-coach</span></h1>
-  <div class="banner">Coaches YOUR OWN presence on-device. Decision-support, not a verdict — probabilistic, with caveats.</div>
+  <h1><i class="ph-fill ph-heartbeat"></i> Presence <span>· private body-language self-coach</span></h1>
+  <div class="banner"><b>Coaches your own presence, on-device.</b> Decision-support, not a verdict. Probabilistic, with caveats.</div>
   <span id="quality" class="pill" style="margin-left:auto">tracking —</span>
-  <a href="./eval.html" class="pill" style="text-decoration:none;color:var(--accent);border-color:var(--accent)">Eval ▸</a>
+  <a href="../" class="pill">Home</a>
+  <a href="./eval.html" class="pill">Eval</a>
 </header>
 
 <div class="wrap">
@@ -53,8 +102,8 @@
       <video id="video" autoplay playsinline muted></video>
       <canvas id="overlay"></canvas>
     </div>
-    <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
-      <button id="start">Start camera</button>
+    <div class="controls">
+      <button id="start"><i class="ph ph-video-camera"></i> Start camera</button>
       <button id="calib" class="sec" disabled>Recalibrate baseline</button>
       <button id="saveProf" class="sec">Save profile</button>
       <button id="loadProf" class="sec">Load profile</button>
@@ -73,22 +122,22 @@
   </div>
 
   <div>
-    <div class="panel" style="margin-bottom:14px;">
+    <div class="panel" style="margin-bottom:16px">
       <h2>Coach insight</h2>
-      <div id="coach" style="font-size:14px;line-height:1.5;background:#10151c;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;min-height:38px">Start the camera to begin.</div>
-      <div id="vitals" class="mut" style="font-size:11px;color:var(--mut);margin-bottom:12px;min-height:14px"></div>
-      <h2>Inferred state (soft-labels)</h2>
+      <div id="coach">Start the camera to begin.</div>
+      <div id="vitals"></div>
+      <h2>Inferred state</h2>
       <div class="dim">
         <div><b id="valence">0.0</b><span>Valence</span></div>
         <div><b id="arousal">0.0</b><span>Arousal</span></div>
         <div><b id="domin">0.0</b><span>Dominance</span></div>
       </div>
-      <div id="primary" style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--accent)">—</div>
-      <div id="states"><div class="caveat">Waiting for camera…</div></div>
+      <div id="primary">—</div>
+      <div id="states"><div class="caveat">Waiting for camera.</div></div>
     </div>
 
     <div class="panel">
-      <h2>Active signals (measurement layer)</h2>
+      <h2>Active signals</h2>
       <div id="signals"><div class="caveat">—</div></div>
     </div>
   </div>

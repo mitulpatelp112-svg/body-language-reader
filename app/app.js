@@ -811,14 +811,14 @@ function drawOverlay(face, pose, hands) {
   drawFace(face);
   if (pose.landmarks && pose.landmarks[0]) {
     const p = pose.landmarks[0];
-    ctx2d.strokeStyle = "rgba(88,166,255,.55)"; ctx2d.lineWidth = 2.5;
+    ctx2d.strokeStyle = "rgba(69,211,173,.5)"; ctx2d.lineWidth = 2.5;
     for (const [a,b] of POSE_CONN){
       if ((p[a].visibility ?? 1) < 0.4 || (p[b].visibility ?? 1) < 0.4) continue;
       ctx2d.beginPath();
       ctx2d.moveTo(p[a].x*canvas.width, p[a].y*canvas.height);
       ctx2d.lineTo(p[b].x*canvas.width, p[b].y*canvas.height); ctx2d.stroke();
     }
-    ctx2d.fillStyle = "#58a6ff";
+    ctx2d.fillStyle = "#45d3ad";
     for (let i=0;i<p.length;i++){
       if ((p[i].visibility ?? 1) < 0.4) continue;
       ctx2d.beginPath(); ctx2d.arc(p[i].x*canvas.width, p[i].y*canvas.height, 3.5, 0, 7); ctx2d.fill();
@@ -826,8 +826,8 @@ function drawOverlay(face, pose, hands) {
   }
   if (hands && hands.landmarks && drawer) {
     for (const h of hands.landmarks) {
-      drawer.drawConnectors(h, HandLandmarker.HAND_CONNECTIONS, { color:"#3fb950", lineWidth:2 });
-      ctx2d.fillStyle = "#7ee787";
+      drawer.drawConnectors(h, HandLandmarker.HAND_CONNECTIONS, { color:"#45d3ad", lineWidth:2 });
+      ctx2d.fillStyle = "#7fe8cf";
       for (const pt of h){ ctx2d.beginPath(); ctx2d.arc(pt.x*canvas.width, pt.y*canvas.height, 2.6, 0, 7); ctx2d.fill(); }
     }
   }
@@ -838,20 +838,20 @@ function drawFace(face) {
   const lm = face.faceLandmarks[0];
   const C = FaceLandmarker;
   // 1) faint full mesh (the dense ~478-point tessellation)
-  drawer.drawConnectors(lm, C.FACE_LANDMARKS_TESSELATION, { color: "rgba(120,160,210,0.18)", lineWidth: 0.5 });
+  drawer.drawConnectors(lm, C.FACE_LANDMARKS_TESSELATION, { color: "rgba(120,200,185,0.16)", lineWidth: 0.5 });
   // 2) every landmark as a small dot — visible density
-  ctx2d.fillStyle = "rgba(180,210,255,0.65)";
+  ctx2d.fillStyle = "rgba(170,235,215,0.55)";
   for (const pt of lm) { ctx2d.beginPath(); ctx2d.arc(pt.x*canvas.width, pt.y*canvas.height, 1.1, 0, 7); ctx2d.fill(); }
   // 3) highlight expression-relevant contours
   const hl = (set, col) => drawer.drawConnectors(lm, set, { color: col, lineWidth: 1.4 });
-  hl(C.FACE_LANDMARKS_FACE_OVAL,     "rgba(88,166,255,0.7)");
-  hl(C.FACE_LANDMARKS_LEFT_EYE,      "#3fb950");
-  hl(C.FACE_LANDMARKS_RIGHT_EYE,     "#3fb950");
-  hl(C.FACE_LANDMARKS_LEFT_EYEBROW,  "#d29922");
-  hl(C.FACE_LANDMARKS_RIGHT_EYEBROW, "#d29922");
-  hl(C.FACE_LANDMARKS_LIPS,          "#f85149");
-  if (C.FACE_LANDMARKS_LEFT_IRIS)  hl(C.FACE_LANDMARKS_LEFT_IRIS,  "#58a6ff");
-  if (C.FACE_LANDMARKS_RIGHT_IRIS) hl(C.FACE_LANDMARKS_RIGHT_IRIS, "#58a6ff");
+  hl(C.FACE_LANDMARKS_FACE_OVAL,     "rgba(69,211,173,0.7)");
+  hl(C.FACE_LANDMARKS_LEFT_EYE,      "#7fe8cf");
+  hl(C.FACE_LANDMARKS_RIGHT_EYE,     "#7fe8cf");
+  hl(C.FACE_LANDMARKS_LEFT_EYEBROW,  "#d8a23a");
+  hl(C.FACE_LANDMARKS_RIGHT_EYEBROW, "#d8a23a");
+  hl(C.FACE_LANDMARKS_LIPS,          "#f0625f");
+  if (C.FACE_LANDMARKS_LEFT_IRIS)  hl(C.FACE_LANDMARKS_LEFT_IRIS,  "#45d3ad");
+  if (C.FACE_LANDMARKS_RIGHT_IRIS) hl(C.FACE_LANDMARKS_RIGHT_IRIS, "#45d3ad");
 }
 
 // ---------- utils ----------
