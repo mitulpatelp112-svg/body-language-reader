@@ -1,14 +1,14 @@
 {
-  "name": "Presence — body-language self-coach",
+  "name": "Presence - body-language self-coach",
   "short_name": "Presence",
   "description": "A private, on-device body-language self-coach. Reads face, posture, voice, and pulse and coaches how you come across.",
-  "start_url": "/app/",
+  "start_url": "app/",
   "display": "standalone",
   "background_color": "#0b0e12",
   "theme_color": "#0b0e12",
   "icons": [
-    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
-    { "src": "/assets/icon-512.png", "type": "image/png", "sizes": "512x512" },
-    { "src": "/assets/apple-touch-icon.png", "type": "image/png", "sizes": "180x180" }
+    { "src": "favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "assets/icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "assets/apple-touch-icon.png", "type": "image/png", "sizes": "180x180" }
   ]
 }

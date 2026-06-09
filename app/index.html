@@ -4,13 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Presence - live demo</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="manifest" href="../site.webmanifest" />
 <meta name="theme-color" content="#0b0e12" />
 <meta property="og:title" content="Presence - live demo" />
 <meta property="og:description" content="A private, on-device body-language self-coach. Reads face, posture, voice, and pulse in real time." />
-<meta property="og:image" content="/assets/og.png" />
+<meta property="og:image" content="https://mitulpatelp112-svg.github.io/body-language-reader/assets/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -154,18 +154,18 @@
         <div><b id="arousal">0.0</b><span>Arousal</span></div>
         <div><b id="domin">0.0</b><span>Dominance</span></div>
       </div>
-      <div id="primary">—</div>
+      <div id="primary">-</div>
       <div id="states"><div class="caveat">Waiting for camera.</div></div>
     </div>
 
     <div class="panel">
       <h2>Active signals</h2>
-      <div id="signals"><div class="caveat">—</div></div>
+      <div id="signals"><div class="caveat">-</div></div>
     </div>
   </div>
 </div>
 
 <script type="module" src="./app.js"></script>
-<script src="/brand.js"></script>
+<script src="../brand.js"></script>
 </body>
 </html>

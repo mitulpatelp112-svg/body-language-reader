@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Accuracy Eval - Presence</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="manifest" href="../site.webmanifest" />
 <meta name="theme-color" content="#0b0e12" />
 <script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -107,7 +107,7 @@
       <button id="dlData" class="sec" disabled>Download dataset (JSONL)</button>
       <span id="status">idle</span>
     </div>
-    <div class="live mut" style="margin-top:10px">Live top prediction: <b id="livepred">—</b></div>
+    <div class="live mut" style="margin-top:10px">Live top prediction: <b id="livepred">-</b></div>
   </div>
   <div>
     <div class="panel" style="margin-bottom:16px">
@@ -125,6 +125,6 @@
   </div>
 </div>
 <script type="module" src="./eval.js"></script>
-<script src="/brand.js"></script>
+<script src="../brand.js"></script>
 </body>
 </html>
