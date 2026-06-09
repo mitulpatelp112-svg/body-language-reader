@@ -366,7 +366,7 @@ function extractFeatures(face, pose, hands) {
                        b.eyeLookUpLeft||0, b.eyeLookDownLeft||0),
     nod: nodEnergy(),
     // body (pose) features — filled below
-    lean: 0, leanBack: 0, closedArms: 0, selfTouch: 0, shrug: 0, headTilt: 0,
+    lean: 0, leanBack: 0, closedArms: 0, selfTouch: 0, shrug: 0, headTilt: 0, torsoTurn: 0,
     handsOnHips: 0, expansive: 0, handToNeck: 0, fidget: 0,
     // hand (finger) features — filled below
     openPalm: 0, handsTogether: 0, pointing: 0
@@ -380,6 +380,8 @@ function extractFeatures(face, pose, hands) {
     const shMidZ = (L(11).z + L(12).z) / 2, hipMidZ = (L(23).z + L(24).z) / 2;
     f.lean = hipMidZ - shMidZ;             // shoulders toward cam => forward lean
     f.leanBack = Math.max(0, shMidZ - hipMidZ);
+    // ventral denial (Navarro): torso turning away => one shoulder rotates back (z diff grows)
+    f.torsoTurn = clip(Math.abs(L(11).z - L(12).z) * 2.5);
     const midX = (L(11).x + L(12).x) / 2;
     const shMidY = (L(11).y + L(12).y) / 2;
     // arms crossed over torso
@@ -503,7 +505,7 @@ function nodEnergy() {
 function updateBaseline(f) {
   const keys = ["smile","browDown","browInnerUp","browOuterUp","gazeAway","lean","neckLen",
                 "frown","eyeWide","noseSneer","upperLip","lipPress","lipStretch","jawOpen","eyeSquint",
-                "chinRaise","dimple","lowerLipDown","lipPucker","lipFunnel","lipSuck","jawJut"];
+                "chinRaise","dimple","lowerLipDown","lipPucker","lipFunnel","lipSuck","jawJut","torsoTurn"];
   if (!baseline) baseline = {};
   const a = calibrating > 0 ? 0.1 : 0.01; // adapt fast during calibration, slow after
   for (const k of keys) {
@@ -548,6 +550,7 @@ function activations(f) {
     // body / posture
     posture_lean_forward: clip(Math.max(0, (f.lean - (baseline?.lean??0)))*6),
     posture_lean_back: clip(f.leanBack*6),
+    posture_ventral_denial: clip(dev(f,"torsoTurn")*3.5),   // Navarro: torso turned away from interlocutor
     posture_closed_arms: f.closedArms,
     posture_shrug: clip(((baseline?.neckLen ?? f.neckLen) - f.neckLen) * 3),
     posture_hands_on_hips: f.handsOnHips,
@@ -676,7 +679,8 @@ function estimateDims(f, act) {
      - (act.face_nose_wrinkle||0)*0.7 - (act.face_lip_press||0)*0.5
      - (act.posture_closed_arms||0)*0.3;
   v += (act.gesture_open_palm||0)*0.3
-     - (act.adaptor_hand_to_neck||0)*0.3 - (act.posture_lean_back||0)*0.2 - (act.body_fidget||0)*0.2;
+     - (act.adaptor_hand_to_neck||0)*0.3 - (act.posture_lean_back||0)*0.2 - (act.body_fidget||0)*0.2
+     - (act.posture_ventral_denial||0)*0.3;   // turning away = discomfort (Navarro)
   a += (act.face_brow_raise||0)*0.4 + (act.face_eye_widen||0)*0.6 + (act.face_jaw_drop||0)*0.5
      + (act.adaptor_self_touch_face||0)*0.4 + (act.regulator_head_nod||0)*0.3
      + (act.body_fidget||0)*0.5 + (act.posture_shrug||0)*0.3 + (act.gesture_hands_together||0)*0.2
@@ -889,6 +893,7 @@ const FALLBACK_KB = { signals: [
   {id:"posture_closed_arms",label:"Arms crossed",inference_reliability:1,interpretations:[{state:"defensiveness / discomfort",prior_confidence:0.2,evidence:"weak",caveats:"MYTH risk — often just cold or habitual."}]},
   {id:"adaptor_self_touch_face",label:"Hand-to-face self-touch",inference_reliability:1,interpretations:[{state:"anxiety / arousal",prior_confidence:0.2,evidence:"weak",caveats:"Rises with general arousal, NOT specifically lying (DePaulo 2003)."}]},
   {id:"posture_lean_back",label:"Backward lean",inference_reliability:2,interpretations:[{state:"disengagement / skepticism",prior_confidence:0.3,evidence:"weak",caveats:"Also relaxation or comfort. Context decides."}]},
+  {id:"posture_ventral_denial",label:"Ventral denial (torso turned away)",inference_reliability:3,interpretations:[{state:"discomfort / withdrawal",prior_confidence:0.4,evidence:"moderate",caveats:"Navarro: we orient our front toward what we favor. Also caused by shifting or addressing someone else."}]},
   {id:"posture_shrug",label:"Shoulder shrug",inference_reliability:3,interpretations:[{state:"uncertainty / I-don't-know",prior_confidence:0.5,evidence:"moderate",caveats:"Recognizable emblem, but can be casual habit."}]},
   {id:"posture_hands_on_hips",label:"Hands on hips (akimbo)",inference_reliability:2,interpretations:[{state:"assertiveness / readiness",prior_confidence:0.35,evidence:"weak",caveats:"Also impatience or simple rest posture."}]},
   {id:"posture_expansive",label:"Expansive / open posture",inference_reliability:2,interpretations:[{state:"confidence / dominance",prior_confidence:0.35,evidence:"weak",caveats:"'Power pose' effects are contested/poorly replicated. Treat cautiously."}]},
@@ -899,11 +904,11 @@ const FALLBACK_KB = { signals: [
   {id:"gesture_hands_together",label:"Hands together / steepled",inference_reliability:2,interpretations:[{state:"contemplation / anxiety (ambiguous)",prior_confidence:0.25,evidence:"weak",caveats:"Steepling=confidence vs clasping=tension — needs finer detail."}]},
   {id:"gesture_pointing",label:"Pointing / index extension",inference_reliability:3,interpretations:[{state:"emphasis / assertion",prior_confidence:0.4,evidence:"moderate",caveats:"Illustrator; can read as aggressive in some cultures."}]}
 ], constructs: {
-  engagement:{label:"Engagement / Interest",positive:{posture_lean_forward:1.0,regulator_head_nod:0.8,regulator_head_tilt:0.6,gesture_open_palm:0.5,face_brow_raise:0.4,prosody_pitch_rise:0.5},negative:{posture_lean_back:0.8,gaze_aversion:0.6,posture_closed_arms:0.4,body_fidget:0.3},reliability:4,min_cues:2,evidence:"Thin-slice behavior predicts engagement at r≈.39 (Ambady & Rosenthal 1992); multimodal engagement detection ≈90%+"},
-  discomfort_anxiety:{label:"Discomfort / Anxiety",positive:{adaptor_self_touch_face:0.9,adaptor_hand_to_neck:0.8,body_fidget:0.8,physio_arousal:0.7,face_lip_press:0.5,face_lip_suck:0.5,gaze_aversion:0.5,posture_closed_arms:0.5,face_blink_rate:0.5,posture_shrug:0.3},negative:{face_smile_genuine:0.6,posture_expansive:0.5},reliability:4,min_cues:2,evidence:"Self-directed displacement behaviours reliably read as stress; salient cues r≈.50"},
+  engagement:{label:"Engagement / Interest",positive:{posture_lean_forward:1.0,regulator_head_nod:0.8,regulator_head_tilt:0.6,gesture_open_palm:0.5,face_brow_raise:0.4,prosody_pitch_rise:0.5},negative:{posture_lean_back:0.8,gaze_aversion:0.6,posture_closed_arms:0.4,body_fidget:0.3,posture_ventral_denial:0.6},reliability:4,min_cues:2,evidence:"Thin-slice behavior predicts engagement at r≈.39 (Ambady & Rosenthal 1992); ventral fronting signals comfort (Navarro 2008)"},
+  discomfort_anxiety:{label:"Discomfort / Anxiety",positive:{adaptor_self_touch_face:0.9,adaptor_hand_to_neck:0.85,body_fidget:0.8,physio_arousal:0.7,posture_ventral_denial:0.6,face_lip_press:0.5,face_lip_suck:0.5,face_cheek_puff:0.4,gaze_aversion:0.5,posture_closed_arms:0.5,face_blink_rate:0.5,posture_shrug:0.3},negative:{face_smile_genuine:0.6,posture_expansive:0.5},reliability:4,min_cues:2,evidence:"Self-directed displacement / pacifying behaviours reliably read as stress (Navarro 2008); salient cues r≈.50"},
   confidence_dominance:{label:"Confidence / Dominance",positive:{posture_expansive:1.0,posture_hands_on_hips:0.9,gesture_pointing:0.5,prosody_pitch_rise:0.3,regulator_head_nod:0.3},negative:{posture_shrug:0.7,adaptor_self_touch_face:0.5,gaze_aversion:0.5,posture_closed_arms:0.4},reliability:3,min_cues:2,evidence:"Dominance display is a multi-cue constellation: expansiveness + hands-on-hips + head tilt + no smile (Witkower & Tracy 2019)"},
-  disengagement:{label:"Disengagement / Withdrawal",positive:{posture_lean_back:1.0,gaze_aversion:0.7,posture_closed_arms:0.6,body_fidget:0.4,posture_shrug:0.3},negative:{posture_lean_forward:0.8,regulator_head_nod:0.5,face_smile_genuine:0.4},reliability:3,min_cues:2,evidence:"Contractive posture + gaze aversion signal low involvement (Mehrabian immediacy)"},
-  rapport_openness:{label:"Rapport / Openness",positive:{face_smile_genuine:0.9,regulator_head_nod:0.7,gesture_open_palm:0.7,posture_lean_forward:0.6,regulator_head_tilt:0.4},negative:{posture_closed_arms:0.6,gaze_aversion:0.5,face_lip_press:0.3},reliability:3,min_cues:2,evidence:"Rapport judged from expressivity/attention/positivity/coordination; low rapport detectable at precision 0.7 (Grahe & Bernieri 1999)"}
+  disengagement:{label:"Disengagement / Withdrawal",positive:{posture_lean_back:1.0,posture_ventral_denial:0.9,gaze_aversion:0.7,posture_closed_arms:0.6,body_fidget:0.4,posture_shrug:0.3},negative:{posture_lean_forward:0.8,regulator_head_nod:0.5,face_smile_genuine:0.4},reliability:3,min_cues:2,evidence:"Contractive posture + gaze aversion signal low involvement; ventral denial is Navarro's (2008) key withdrawal cue"},
+  rapport_openness:{label:"Rapport / Openness",positive:{face_smile_genuine:0.9,regulator_head_nod:0.7,gesture_open_palm:0.7,posture_lean_forward:0.6,regulator_head_tilt:0.4},negative:{posture_closed_arms:0.6,gaze_aversion:0.5,face_lip_press:0.3,posture_ventral_denial:0.5},reliability:3,min_cues:2,evidence:"Rapport judged from expressivity/attention/positivity/coordination; low rapport detectable at precision 0.7 (Grahe & Bernieri 1999)"}
 }};
 
 // ---------- wire up ----------

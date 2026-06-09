@@ -401,6 +401,19 @@
       "sources": ["BAP coding scheme"]
     },
     {
+      "id": "posture_ventral_denial",
+      "label": "Ventral denial (torso turned away)",
+      "ekman_category": "affect_display",
+      "modality": ["body"],
+      "measurable_via": "MediaPipe pose: shoulder-line rotation (z-difference between shoulders) vs frontal baseline",
+      "observable": "The front (ventral) of the torso turns away from the interlocutor/camera",
+      "interpretations": [
+        {"state": "discomfort / withdrawal", "prior_confidence": 0.4, "evidence": "moderate", "requires_context": ["baseline deviation"], "caveats": "Navarro's ventral-denial concept: we orient our front toward what we favor and away from discomfort. Field-derived, not RCT-validated; also caused by shifting position or addressing someone else."}
+      ],
+      "inference_reliability": 3,
+      "sources": ["Navarro 2008, What Every BODY is Saying (ventral denial/fronting)"]
+    },
+    {
       "id": "posture_shrug",
       "label": "Shoulder shrug",
       "ekman_category": "emblem",
@@ -602,18 +615,18 @@
     "engagement": {
       "label": "Engagement / Interest",
       "positive": {"posture_lean_forward":1.0,"regulator_head_nod":0.8,"regulator_head_tilt":0.6,"gesture_open_palm":0.5,"face_brow_raise":0.4,"prosody_pitch_rise":0.5},
-      "negative": {"posture_lean_back":0.8,"gaze_aversion":0.6,"posture_closed_arms":0.4,"body_fidget":0.3},
+      "negative": {"posture_lean_back":0.8,"gaze_aversion":0.6,"posture_closed_arms":0.4,"body_fidget":0.3,"posture_ventral_denial":0.6},
       "reliability": 4, "min_cues": 2,
-      "evidence": "Thin-slice behavior predicts engagement/interpersonal outcomes at r≈.39 (Ambady & Rosenthal 1992); multimodal classroom engagement detection ≈90%+ fusing face+posture+gesture.",
+      "evidence": "Thin-slice behavior predicts engagement/interpersonal outcomes at r≈.39 (Ambady & Rosenthal 1992); multimodal classroom engagement detection ≈90%+ fusing face+posture+gesture. Ventral fronting (facing toward) signals comfort/engagement (Navarro 2008).",
       "sources": ["Ambady & Rosenthal 1992 (thin slices)", "Bimodal classroom engagement recognition 2022"]
     },
     "discomfort_anxiety": {
       "label": "Discomfort / Anxiety",
-      "positive": {"adaptor_self_touch_face":0.9,"adaptor_hand_to_neck":0.8,"body_fidget":0.8,"physio_arousal":0.7,"face_lip_press":0.5,"face_lip_suck":0.5,"gaze_aversion":0.5,"posture_closed_arms":0.5,"face_blink_rate":0.5,"posture_shrug":0.3},
+      "positive": {"adaptor_self_touch_face":0.9,"adaptor_hand_to_neck":0.85,"body_fidget":0.8,"physio_arousal":0.7,"posture_ventral_denial":0.6,"face_lip_press":0.5,"face_lip_suck":0.5,"face_cheek_puff":0.4,"gaze_aversion":0.5,"posture_closed_arms":0.5,"face_blink_rate":0.5,"posture_shrug":0.3},
       "negative": {"face_smile_genuine":0.6,"posture_expansive":0.5},
       "reliability": 4, "min_cues": 2,
-      "evidence": "Self-directed displacement behaviours (self-touch, fidget) are reliably read as stress (signal value of stress behaviour, 2022); hands/eyes/mouth/torso are the most salient anxiety cues, r≈.50.",
-      "sources": ["Signal value of stress behaviour 2022", "Nonverbal cues for anxiety / emotional leakage"]
+      "evidence": "Self-directed displacement behaviours (self-touch, fidget) are reliably read as stress (signal value of stress behaviour, 2022); hands/eyes/mouth/torso are the most salient anxiety cues, r≈.50. Navarro (2008) catalogs 'pacifying behaviours' (neck/suprasternal touch, face stroke, cheek-puff exhale) as the limbic stress response.",
+      "sources": ["Signal value of stress behaviour 2022", "Nonverbal cues for anxiety / emotional leakage", "Navarro 2008, What Every BODY is Saying"]
     },
     "confidence_dominance": {
       "label": "Confidence / Dominance",
@@ -625,16 +638,16 @@
     },
     "disengagement": {
       "label": "Disengagement / Withdrawal",
-      "positive": {"posture_lean_back":1.0,"gaze_aversion":0.7,"posture_closed_arms":0.6,"body_fidget":0.4,"posture_shrug":0.3},
+      "positive": {"posture_lean_back":1.0,"posture_ventral_denial":0.9,"gaze_aversion":0.7,"posture_closed_arms":0.6,"body_fidget":0.4,"posture_shrug":0.3},
       "negative": {"posture_lean_forward":0.8,"regulator_head_nod":0.5,"face_smile_genuine":0.4},
       "reliability": 3, "min_cues": 2,
-      "evidence": "Contractive/closed posture + gaze aversion signal low involvement; the inverse of the engagement constellation (Mehrabian immediacy; Ambady & Rosenthal 1992).",
-      "sources": ["Mehrabian immediacy", "Ambady & Rosenthal 1992"]
+      "evidence": "Contractive/closed posture + gaze aversion signal low involvement; the inverse of the engagement constellation (Mehrabian immediacy; Ambady & Rosenthal 1992). Ventral denial (turning the torso away) is Navarro's (2008) key withdrawal cue.",
+      "sources": ["Mehrabian immediacy", "Ambady & Rosenthal 1992", "Navarro 2008"]
     },
     "rapport_openness": {
       "label": "Rapport / Openness",
       "positive": {"face_smile_genuine":0.9,"regulator_head_nod":0.7,"gesture_open_palm":0.7,"posture_lean_forward":0.6,"regulator_head_tilt":0.4},
-      "negative": {"posture_closed_arms":0.6,"gaze_aversion":0.5,"face_lip_press":0.3},
+      "negative": {"posture_closed_arms":0.6,"gaze_aversion":0.5,"face_lip_press":0.3,"posture_ventral_denial":0.5},
       "reliability": 3, "min_cues": 2,
       "evidence": "Rapport is judged from expressivity, attentiveness, positivity, and coordination; low rapport detectable from facial cues at avg precision 0.7 (Grahe & Bernieri 1999; Müller et al. 2018).",
       "sources": ["Grahe & Bernieri 1999", "Müller et al. 2018 low-rapport detection"]

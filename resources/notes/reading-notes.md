@@ -40,3 +40,25 @@ contributes to the build" and "how much to trust its claims."
 - [ ] OCR `user_unknown_62pg.pdf` to identify & use it.
 - [ ] Datasets (AffectNet/EMOTIC/IEMOCAP/MOSEI) are license-gated — need user to register (see `resources/datasets/README`).
 - [ ] Decide build vs. taxonomy-first for next step.
+
+## Newly added trade books (2026-06-08) + what was implemented
+
+| File | Is | Rigor | Role |
+|---|---|:--:|---|
+| `what-everybody-is-saying.pdf` | **Joe Navarro (2008), "What Every BODY is Saying"** (ex-FBI). Head-to-toe taxonomy organized around the **limbic comfort/discomfort** model. | **Low-moderate** (experiential / field-derived, not peer-reviewed RCTs) | Mined for *measurable* additions, tagged accordingly. |
+| `Allan_and_Barbara_Pease_-_Body_Language_The_Definitive_Book.pdf` | **Pease & Pease, "The Definitive Book of Body Language"** popular trade book. | **Low** (pop-psych) | Reference only; not used as evidence. |
+
+**Implemented from Navarro (the measurable, defensible parts):**
+- **New signal `posture_ventral_denial`** — torso turning its front (ventral) side *away* from the
+  interlocutor. Navarro's central, distinctive, and genuinely measurable cue (shoulder-line rotation
+  via pose z-difference). Wired into the constructs: it raises **Discomfort/Anxiety** and
+  **Disengagement/Withdrawal**, and lowers **Engagement** and **Rapport** (ventral *fronting* =
+  comfort). Rated reliability 3/5, evidence "moderate", with the caveat that it's field-derived and
+  also caused by simply shifting or addressing someone else.
+- **Pacifying-behaviour framing** added to the Discomfort construct: neck/suprasternal touch
+  (`adaptor_hand_to_neck`, weight bumped), face stroke (`adaptor_self_touch_face`), and cheek-puff
+  exhale (`face_cheek_puff`) are now cited as Navarro's limbic stress cluster.
+
+**Deliberately NOT implemented:** feet/leg "tells" (usually off-camera), pupil dilation (not
+reliably measurable via webcam), and any single-cue "this means lying" claims (against the project's
+honesty rules and unsupported by the science).
