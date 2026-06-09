@@ -19,3 +19,9 @@ graphify-out/cost.json
 
 # CodeGraph index
 .codegraph/
+
+# Large / license-gated datasets (do NOT commit to a public repo)
+resources/DISFA/
+resources/datasets/RAF-DB DATASET/
+resources/**/*.zip
+resources/**/Images/
