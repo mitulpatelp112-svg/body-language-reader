@@ -1,4 +1,4 @@
-// Shared theme toggle for Presence (landing, demo, eval). Pre-paint theme is set by a tiny inline
+// Shared theme toggle for AJNA (landing, demo, eval). Pre-paint theme is set by a tiny inline
 // script in each <head> to avoid a flash; this only wires the toggle button + persistence.
 (function () {
   const root = document.documentElement;

@@ -33,10 +33,21 @@ uvicorn server:app --reload --port 8001
 ```
 First request downloads the models (a few hundred MB) — slow once, cached after.
 
+## Endpoints
+| Path | Input | Returns |
+|---|---|---|
+| `GET /health` | — | `{ok, model_loaded}` |
+| `POST /analyze` | JSON `{image: dataURL}` | live-webcam frame → emotions + AUs + V/A |
+| `POST /analyze_image` | multipart `file=<image>` | uploaded photo → emotions + AUs + V/A + `top`/`confidence` + caveats |
+| `POST /analyze_video` | multipart `file=<video>` (+ `?fps=2&max_frames=120`) | per-frame timeline + aggregate emotion + caveats |
+
+The browser UI for the upload endpoints lives at **`app/upload.html`**.
+
 ## Test
 ```bash
 curl -s localhost:8001/health
-# then POST a base64 JPEG data URL to /analyze
+curl -s -F "file=@some.jpg"  localhost:8001/analyze_image           | jq .top,.confidence
+curl -s -F "file=@some.mp4"  "localhost:8001/analyze_video?fps=2"   | jq .aggregate
 ```
 
 ## Wiring it into the app (next step, not yet enabled)

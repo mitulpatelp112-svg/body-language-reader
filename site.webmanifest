@@ -1,6 +1,6 @@
 {
-  "name": "Presence - body-language self-coach",
-  "short_name": "Presence",
+  "name": "AJNA - body-language self-coach",
+  "short_name": "AJNA",
   "description": "A private, on-device body-language self-coach. Reads face, posture, voice, and pulse and coaches how you come across.",
   "start_url": "app/",
   "display": "standalone",

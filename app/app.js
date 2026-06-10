@@ -136,14 +136,15 @@ async function startCamera() {
   requestAnimationFrame(loop);
 }
 
-// ---------- FACS backend (optional, calibrated AUs/emotions) ----------
+// ---------- AJNA trained-CNN backend (EfficientNet-B4, AffectNet 6-class) ----------
 async function pollBackend() {
   if (!backendOn || backendBusy || !running || video.readyState < 2) return;
   backendBusy = true;
   try {
     grabCtx.drawImage(video, 0, 0, 320, 240);
     const img = grabCanvas.toDataURL("image/jpeg", 0.7);
-    const r = await fetch(BACKEND_URL + "/analyze", {
+    // AJNA's own trained CNN. Graceful no-op if the backend isn't running.
+    const r = await fetch(BACKEND_URL + "/analyze_cnn_live", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: img }) });
     const j = await r.json();
@@ -637,7 +638,7 @@ function interpret(f) {
       const st = states[emo] || (states[emo] = { p:0, contributors:[], caveats:new Set(), evid:"moderate", prototype:false });
       const contrib = prob * 0.7 * frameQ;                 // backend weight 0.7
       st.p = 1 - (1 - st.p) * (1 - contrib);
-      st.contributors.push("FACS backend (calibrated)");
+      st.contributors.push("AJNA model (trained CNN)");
       st.prototype = true;
     }
   }
@@ -929,10 +930,10 @@ $("facs").addEventListener("change", async (e) => {
     try {
       const r = await fetch(BACKEND_URL + "/health", { signal: AbortSignal.timeout(2000) });
       if (!(await r.json()).ok) throw new Error("not ok");
-      backendOn = true; $("backendStat").textContent = "FACS: on";
+      backendOn = true; $("backendStat").textContent = "AJNA model: on";
     } catch (err) {
       e.target.checked = false; backendOn = false;
-      $("backendStat").textContent = "FACS: unreachable — start backend on :8001";
+      $("backendStat").textContent = "AJNA model: unreachable — start backend on :8001";
     }
-  } else { backendOn = false; backendEmotions = null; $("backendStat").textContent = "FACS: off"; }
+  } else { backendOn = false; backendEmotions = null; $("backendStat").textContent = "AJNA model: off"; }
 });

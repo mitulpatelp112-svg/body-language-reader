@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Presence - live demo</title>
+<title>AJNA - live demo</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
 <link rel="manifest" href="../site.webmanifest" />
 <meta name="theme-color" content="#0b0e12" />
-<meta property="og:title" content="Presence - live demo" />
+<meta property="og:title" content="AJNA - live demo" />
 <meta property="og:description" content="A private, on-device body-language self-coach. Reads face, posture, voice, and pulse in real time." />
 <meta property="og:image" content="https://mitulpatelp112-svg.github.io/body-language-reader/assets/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
-  /* Brand-matched to the Presence landing page. Dark theme locked, single mint-teal accent.
+  /* Brand-matched to the AJNA landing page. Dark theme locked, single mint-teal accent.
      Radius rule: cards 16px, buttons full pill. CSS var names kept stable for app.js inline styles. */
   :root{
     --bg:#0b0e12; --bg2:#0e1218; --panel:#141a21; --card2:#171e26;
@@ -110,7 +110,7 @@
 </head>
 <body>
 <header>
-  <h1><i class="ph-fill ph-heartbeat"></i> Presence <span>· private body-language self-coach</span></h1>
+  <h1><i class="ph-fill ph-heartbeat"></i> AJNA <span>· private body-language self-coach</span></h1>
   <div class="banner"><b>Coaches your own presence, on-device.</b> Decision-support, not a verdict. Probabilistic, with caveats.</div>
   <span id="quality" class="pill" style="margin-left:auto">tracking</span>
   <a href="../" class="pill">Home</a>
@@ -137,7 +137,7 @@
           <option value="cold">Cold environment</option>
         </select>
       </label>
-      <label class="legend"><input type="checkbox" id="facs"> FACS backend</label>
+      <label class="legend"><input type="checkbox" id="facs"> AJNA model</label>
       <span id="backendStat" class="mut"></span>
       <span id="status">idle</span>
     </div>

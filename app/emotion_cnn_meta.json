@@ -1,0 +1,80 @@
+{
+  "classes": [
+    "anger",
+    "disgust",
+    "fear",
+    "happiness",
+    "sadness",
+    "surprise"
+  ],
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "input_size": 300,
+  "val_acc": 0.7194148936170213,
+  "test_acc": 0.7234859675036928,
+  "test_macro_f1": 0.7026435376230755,
+  "n_test": 3385,
+  "confusion": [
+    [
+      348,
+      64,
+      23,
+      1,
+      76,
+      28
+    ],
+    [
+      69,
+      246,
+      33,
+      4,
+      31,
+      31
+    ],
+    [
+      42,
+      21,
+      324,
+      4,
+      41,
+      95
+    ],
+    [
+      1,
+      2,
+      0,
+      728,
+      1,
+      4
+    ],
+    [
+      68,
+      35,
+      39,
+      0,
+      345,
+      35
+    ],
+    [
+      24,
+      19,
+      106,
+      11,
+      28,
+      458
+    ]
+  ],
+  "report": "              precision    recall  f1-score   support\n\n       anger      0.630     0.644     0.637       540\n     disgust      0.636     0.594     0.614       414\n        fear      0.617     0.615     0.616       527\n   happiness      0.973     0.989     0.981       736\n     sadness      0.661     0.661     0.661       522\n    surprise      0.704     0.709     0.706       646\n\n    accuracy                          0.723      3385\n   macro avg      0.703     0.702     0.703      3385\nweighted avg      0.722     0.723     0.723      3385\n",
+  "architecture": "efficientnet_b4 (ImageNet pretrained, fine-tuned)",
+  "preprocessing": "MediaPipe face crop + eye-roll align, 256px",
+  "training": "WeightedRandomSampler + RandAugment + RandomErasing + mixup/cutmix + label smoothing + TTA eval",
+  "trained_on": "AffectNet 6-class (anger, disgust, fear, happiness, sadness, surprise \u2014 neutral & contempt excluded)"
+}

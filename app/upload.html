@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Upload analyser - AJNA</title>
+<meta name="description" content="Upload a photo or short clip and get calibrated emotion probabilities + Action Units + valence/arousal. Probabilistic, caveated, on a real FACS-grounded model." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="manifest" href="../site.webmanifest" />
+<meta name="theme-color" content="#0b0e12" />
+<script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --bg:#0b0e12; --bg2:#0e1218; --panel:#141a21; --card2:#171e26;
+    --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
+    --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
+    --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e; --r:16px;
+    --stage:#06080b; --header-bg:rgba(11,14,18,.8);
+  }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa; --bg2:#edf1f5; --panel:#ffffff; --card2:#f6f8fb;
+    --line:#e1e6ec; --txt:#0d1117; --mut:#586273; --faint:#8a94a3;
+    --good:#0a8f6e; --warn:#9a6a12; --bad:#c2403c;
+    --accent:#0a8f6e; --accent-soft:rgba(10,143,110,.10); --accent-ink:#ffffff;
+    --stage:#e6eaef; --header-bg:rgba(255,255,255,.82);
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+
+  header{display:flex;gap:14px;align-items:center;padding:13px 20px;
+    border-bottom:1px solid var(--line);background:var(--header-bg);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+  .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;
+    background:transparent;border:1px solid var(--line);cursor:pointer;font-size:16px;transition:background .2s,border-color .2s}
+  .iconbtn:hover{background:var(--card2);border-color:var(--faint)} .iconbtn i{color:var(--accent)}
+  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  header h1 i{color:var(--accent);font-size:19px}
+  header h1 span{color:var(--mut);font-weight:400}
+  a.pill{margin-left:auto;font-size:12px;color:var(--accent);border:1px solid rgba(69,211,173,.35);
+    padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:7px}
+  a.pill:hover{background:var(--accent-soft)}
+
+  .wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px;max-width:1320px;margin:0 auto}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .panel h2{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;font-weight:600}
+
+  .drop{border:1.5px dashed var(--line);border-radius:14px;padding:34px 16px;text-align:center;
+    cursor:pointer;transition:border-color .2s,background .2s;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop i{font-size:32px;color:var(--accent)}
+  .drop .t{font-weight:600}
+  .drop .s{color:var(--mut);font-size:12.5px}
+  .drop input{display:none}
+
+  .preview{margin-top:14px;background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+  .preview.show{display:block}
+  .preview img,.preview video{width:100%;display:block;max-height:360px;object-fit:contain;background:#000}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:600;font-size:14px;
+    padding:10px 18px;cursor:pointer;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);transition:background .2s,transform .15s}
+  .btn:hover{background:#54e0bb}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;filter:saturate(.4)}
+  .btn-ghost{background:transparent;color:var(--txt);border-color:var(--line)}
+  .btn-ghost:hover{background:var(--card2);border-color:var(--faint)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .row label{color:var(--mut);font-size:12.5px}
+  .row input[type=number]{width:64px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px}
+
+  .empty{color:var(--mut);text-align:center;padding:32px 12px;font-size:13.5px}
+  .empty i{font-size:26px;color:var(--faint);display:block;margin-bottom:8px}
+
+  .top{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+  .top .label{font-size:26px;font-weight:700;letter-spacing:-.01em;text-transform:capitalize}
+  .top .conf{color:var(--mut);font-size:13px}
+  .top .badge{margin-left:auto;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
+    padding:4px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid rgba(69,211,173,.35)}
+
+  .bars{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+  .bar{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;font-size:12.5px}
+  .bar .nm{color:var(--mut);text-transform:capitalize}
+  .bar .tr{background:var(--card2);height:8px;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fl{height:100%;background:var(--accent);border-radius:999px}
+  .bar .pct{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+
+  .vad{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .vad .cell{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .vad .lab{color:var(--mut);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+  .vad .val{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+
+  .aus{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+  .aus .au{display:grid;grid-template-columns:64px 1fr 36px;gap:6px;align-items:center;font-size:12px}
+  .aus .au .nm{color:var(--mut);font-variant-numeric:tabular-nums}
+  .aus .au .tr{background:var(--card2);height:6px;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .aus .au .fl{height:100%;background:var(--accent);border-radius:999px}
+  .aus .au .pct{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+
+  .timeline{margin-top:14px}
+  .tl-canvas{width:100%;height:160px;background:var(--card2);border:1px solid var(--line);border-radius:12px;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:11.5px;color:var(--mut)}
+  .legend .it{display:inline-flex;align-items:center;gap:5px}
+  .legend .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  .status{margin-top:10px;font-size:12.5px;color:var(--mut)}
+  .err{color:var(--bad)}
+
+  .caveats{margin-top:18px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .caveats h3{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:0 0 6px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .caveats h3 i{color:var(--warn)}
+  .caveats ul{margin:0;padding-left:18px;color:var(--mut);font-size:12.5px}
+  .caveats li{margin:3px 0}
+
+  .endpoint{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:8px;
+    padding:4px 8px;font-size:11.5px;color:var(--mut);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .endpoint b{color:var(--txt);font-weight:500}
+</style>
+</head>
+<body>
+<header>
+  <button class="iconbtn" aria-label="Back" onclick="history.length>1?history.back():location.href='../'"><i class="ph ph-arrow-left"></i></button>
+  <h1><i class="ph-fill ph-heartbeat"></i> AJNA <span>· Upload analyser</span></h1>
+  <span class="endpoint" id="endpoint">backend: <b id="ep-host">http://localhost:8001</b></span>
+  <a class="pill" href="./"><i class="ph ph-video-camera"></i> Live demo</a>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: input -->
+  <section class="panel">
+    <h2>Input</h2>
+
+    <label class="drop" id="drop-img">
+      <i class="ph ph-image"></i>
+      <div class="t">Drop a photo, or click to choose</div>
+      <div class="s">JPEG / PNG · single face works best</div>
+      <input type="file" id="file-img" accept="image/*" />
+    </label>
+    <div class="preview" id="prev-img"><img id="img-el" alt="preview" /></div>
+
+    <label class="drop" id="drop-vid" style="margin-top:14px">
+      <i class="ph ph-video"></i>
+      <div class="t">Drop a short video, or click to choose</div>
+      <div class="s">MP4 / MOV / WebM · keep it under ~30s for fast results</div>
+      <input type="file" id="file-vid" accept="video/*" />
+    </label>
+    <div class="preview" id="prev-vid"><video id="vid-el" controls muted playsinline></video></div>
+
+    <div class="row" style="gap:14px">
+      <label style="display:flex;flex-direction:column;gap:3px">
+        <span style="font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)">Model (image)</span>
+        <select id="model-sel" style="background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px">
+          <option value="cnn">Fast CNN (in-house, 6 classes)</option>
+          <option value="facs">Calibrated FACS (py-feat, 7 emotions + AUs)</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label for="fps">Sample fps</label>
+      <input type="number" id="fps" min="0.5" max="10" step="0.5" value="2" />
+      <label for="maxf">Max frames</label>
+      <input type="number" id="maxf" min="5" max="600" step="5" value="120" />
+      <button class="btn" id="go" disabled><i class="ph ph-play"></i><span>Analyse</span></button>
+      <button class="btn btn-ghost" id="clear" type="button"><i class="ph ph-x"></i> Clear</button>
+    </div>
+    <div class="status" id="status">Choose an image or video. The backend must be running (<code>uvicorn server:app --port 8001</code>).</div>
+
+    <div class="caveats">
+      <h3><i class="ph-fill ph-warning"></i> What this is — and isn't</h3>
+      <ul>
+        <li>This is a <b>calibrated probabilistic estimate</b>, not a verdict. Facial expression maps to emotion with substantial variance (Barrett 2019).</li>
+        <li><b>Fast CNN</b>: EfficientNet-B4 trained in-house on AffectNet 6-class (anger, disgust, fear, happiness, sadness, surprise), face-cropped + aligned — held-out test accuracy <b id="cnn-acc">72.3%</b> (TTA). Cannot predict neutral / contempt.</li>
+        <li><b>Calibrated FACS</b>: py-feat (RetinaFace + MobileFaceNet + XGB AUs + ResMaskNet) — 7 emotions + 20 Action Units. Slower but gives the AU breakdown.</li>
+        <li>No lie / intent / deception inference — the science doesn't support it (DePaulo 2003).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- RIGHT: output -->
+  <section class="panel">
+    <h2>Read</h2>
+    <div id="empty" class="empty"><i class="ph ph-magnifying-glass"></i>No analysis yet. Drop an image or video on the left.</div>
+
+    <div id="result" style="display:none">
+      <div class="top">
+        <span class="label" id="r-top">—</span>
+        <span class="conf" id="r-conf">—</span>
+        <span class="badge" id="r-kind">image</span>
+      </div>
+      <div class="bars" id="r-bars"></div>
+
+      <div class="vad">
+        <div class="cell"><div class="lab">Valence</div><div class="val" id="r-val">—</div></div>
+        <div class="cell"><div class="lab">Arousal</div><div class="val" id="r-aro">—</div></div>
+      </div>
+
+      <h2 style="margin-top:18px">Action Units (calibrated)</h2>
+      <div class="aus" id="r-aus"></div>
+
+      <div class="timeline" id="r-tl" style="display:none">
+        <h2 style="margin-top:18px">Timeline</h2>
+        <canvas class="tl-canvas" id="tl"></canvas>
+        <div class="legend" id="tl-legend"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="./upload.js"></script>
+</body>
+</html>

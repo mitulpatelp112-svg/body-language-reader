@@ -8,9 +8,20 @@ __pycache__/
 *.pyc
 backend/.venv/
 .venv/
+.venv-train/
 
-# Trained model artifact (regenerate from your own data via backend/train.py)
-app/model.json
+# Datasets — NOT redistributable (AffectNet research license) + far too large for git.
+# Regenerate face crops with backend/crop_faces.py, features with backend/extract_blendshapes.py.
+resources/datasets/
+data/
+*.zip
+
+# Logs + watchdog state
+logs/
+backend/face_landmarker.task
+
+# NOTE: trained models (app/*.onnx, app/*.pt, app/*_meta.json, app/model.json) ARE committed —
+# they're the deliverable. The big raw data above is excluded; models are kept.
 
 # graphify internal cache / interpreter pointers (keep graph.html, graph.json, GRAPH_REPORT.md)
 graphify-out/cache/
@@ -19,3 +30,6 @@ graphify-out/cost.json
 
 # CodeGraph index
 .codegraph/
+
+# runtime locks
+.claude/scheduled_tasks.lock
