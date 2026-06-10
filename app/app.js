@@ -1,4 +1,4 @@
-// Body-Language Reader — live engine
+// Body-Language Reader - live engine
 // Measurement: MediaPipe FaceLandmarker (blendshapes ~= action units) + PoseLandmarker.
 // Interpretation: feeds detections into ../knowledge-base/signals.json (probabilistic, caveated).
 import { FaceLandmarker, PoseLandmarker, HandLandmarker, FilesetResolver, DrawingUtils }
@@ -33,7 +33,7 @@ const roiCanvas = Object.assign(document.createElement("canvas"), {width:30, hei
 const roiCtx = roiCanvas.getContext("2d", { willReadFrequently: true });
 const rppg = { buf: [], hr: 0, hrBase: null, arousal: 0, quality: 0 };  // buf: {t, g}
 let lastHrT = 0;
-// optional py-feat FACS backend (calibrated AUs/emotions) — off by default
+// optional py-feat FACS backend (calibrated AUs/emotions) - off by default
 const BACKEND_URL = "http://localhost:8001";
 let backendOn = false, backendBusy = false, backendEmotions = null;
 const grabCanvas = Object.assign(document.createElement("canvas"), {width:320, height:240});
@@ -72,11 +72,11 @@ async function loadKB() {
 class CameraError extends Error {
   constructor(e) {
     const m = {
-      NotAllowedError: "Camera permission denied. Click the camera icon in your browser's address bar → Allow, then reload. (Embedded preview panels usually block the camera — open this page in a real browser tab at http://localhost:8000/app/ instead.)",
+      NotAllowedError: "Camera permission denied. Click the camera icon in your browser's address bar → Allow, then reload. (Embedded preview panels usually block the camera - open this page in a real browser tab at http://localhost:8000/app/ instead.)",
       NotFoundError: "No camera found. Connect a webcam and reload.",
       NotReadableError: "Camera is in use by another app (Zoom, FaceTime, etc.). Close it and reload.",
       OverconstrainedError: "Camera doesn't support the requested resolution.",
-      SecurityError: "Camera blocked — the page must be served over http://localhost or https://.",
+      SecurityError: "Camera blocked - the page must be served over http://localhost or https://.",
     }[e && e.name] || ("Camera error: " + (e && e.message || e));
     super(m); this.name = "CameraError";
   }
@@ -119,11 +119,11 @@ async function startCamera() {
   } catch (e) {
     throw new CameraError(e);   // surfaced with a friendly, actionable message
   }
-  // Mic is optional — prosody/voice just stays off if denied.
+  // Mic is optional - prosody/voice just stays off if denied.
   try {
     const a = await navigator.mediaDevices.getUserMedia({ audio: true });
     a.getAudioTracks().forEach(t => stream.addTrack(t));
-  } catch { console.warn("mic unavailable — voice/prosody disabled"); }
+  } catch { console.warn("mic unavailable - voice/prosody disabled"); }
   video.srcObject = stream;
   await video.play();
   canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -257,7 +257,7 @@ function computeHR(t) {
   const fs = b.length / dur;
   const vals = b.map(x => x.g), mean = vals.reduce((a,c)=>a+c,0)/vals.length;
   const sig = vals.map(v => v - mean);
-  const minLag = Math.floor(fs/4), maxLag = Math.floor(fs/0.7);  // 42–240 bpm band
+  const minLag = Math.floor(fs/4), maxLag = Math.floor(fs/0.7);  // 42-240 bpm band
   let best=0, bestLag=-1, energy=0;
   for (let i=0;i<sig.length;i++) energy += sig[i]*sig[i];
   for (let lag=minLag; lag<=maxLag && lag<sig.length; lag++) {
@@ -278,7 +278,7 @@ function startCalibration() { calibrating = 90; baseline = null; statusEl.textCo
 // ---------- Per-person profiles (persist baseline across sessions) ----------
 const PROFILE_KEY = "blr_profile_default";
 function saveProfile() {
-  if (!baseline) { $("backendStat").textContent = "no baseline yet — calibrate first"; return; }
+  if (!baseline) { $("backendStat").textContent = "no baseline yet - calibrate first"; return; }
   localStorage.setItem(PROFILE_KEY, JSON.stringify({ baseline, pitchBase, energyBase, ts: Date.now() }));
   statusEl.textContent = "profile saved";
 }
@@ -288,7 +288,7 @@ function loadProfile() {
   try {
     const p = JSON.parse(raw);
     baseline = p.baseline; pitchBase = p.pitchBase ?? null; energyBase = p.energyBase ?? null;
-    calibrating = 0; statusEl.textContent = "profile loaded — skipping calibration";
+    calibrating = 0; statusEl.textContent = "profile loaded - skipping calibration";
   } catch { statusEl.textContent = "profile corrupt"; }
 }
 
@@ -365,10 +365,10 @@ function extractFeatures(face, pose, hands) {
                        b.eyeLookInLeft||0, b.eyeLookInRight||0,
                        b.eyeLookUpLeft||0, b.eyeLookDownLeft||0),
     nod: nodEnergy(),
-    // body (pose) features — filled below
+    // body (pose) features - filled below
     lean: 0, leanBack: 0, closedArms: 0, selfTouch: 0, shrug: 0, headTilt: 0, torsoTurn: 0,
     handsOnHips: 0, expansive: 0, handToNeck: 0, fidget: 0,
-    // hand (finger) features — filled below
+    // hand (finger) features - filled below
     openPalm: 0, handsTogether: 0, pointing: 0
   };
 
@@ -474,7 +474,7 @@ function blinkUpdate(blinkVal, t) {
   const hz = blinkTimes.length / 6;        // blinks/sec over 6s
   return clip((hz - 0.4) / 0.8);           // >~0.4Hz starts registering as elevated
 }
-// geometric mean — AU constellation co-activation (ALL components must be present)
+// geometric mean - AU constellation co-activation (ALL components must be present)
 const gm = (...xs) => Math.pow(xs.reduce((p,x)=>p*Math.max(0.0001,x),1), 1/xs.length);
 // EMA-smooth every numeric feature so per-frame landmark jitter doesn't drive activations
 function smoothFeatures(f) {
@@ -566,7 +566,7 @@ function activations(f) {
     // voice / prosody (only when speaking)
     prosody_pitch_rise: prosody.voiced ? clip(prosody.arousal) : 0,
     prosody_pause_disfluency: prosody.voiced ? clip(prosody.disfluency) : 0,
-    // physiological (rPPG) — contactless, harder to fake than posed expression
+    // physiological (rPPG) - contactless, harder to fake than posed expression
     physio_arousal: rppg.quality > 0.25 ? clip(rppg.arousal) : 0
   };
 }
@@ -618,7 +618,7 @@ function interpret(f) {
     }
   }
 
-  // fuse the in-browser TRAINED model (data-driven) if present — highest-weight contributor
+  // fuse the in-browser TRAINED model (data-driven) if present - highest-weight contributor
   if (hasModel() && lastBlendshapes) {
     const mp = modelPredict(lastBlendshapes);
     if (mp) for (const [emo, prob] of Object.entries(mp)) {
@@ -630,7 +630,7 @@ function interpret(f) {
     }
   }
 
-  // fuse FACS backend emotions (calibrated) if available — second independent estimate
+  // fuse FACS backend emotions (calibrated) if available - second independent estimate
   if (backendEmotions) {
     for (const [emo, prob] of Object.entries(backendEmotions)) {
       if (prob < 0.15) continue;
@@ -690,7 +690,7 @@ function estimateDims(f, act) {
      + (act.posture_expansive||0)*0.6 + (act.posture_hands_on_hips||0)*0.5 + (act.gesture_pointing||0)*0.4
      - (act.gaze_aversion||0)*0.3 - (act.face_eye_widen||0)*0.3 - (act.posture_closed_arms||0)*0.2
      - (act.posture_shrug||0)*0.4 - (act.adaptor_hand_to_neck||0)*0.3;
-  // fuse independent voice A/D/V estimate (only while speaking) — multimodal dimensional fusion
+  // fuse independent voice A/D/V estimate (only while speaking) - multimodal dimensional fusion
   if (prosody.voiced) { v += prosody.v*0.4; a += prosody.a*0.4; d += prosody.d*0.4; }
   return { v: deadzone(clamp(v), 0.07), a: deadzone(clamp(a), 0.06), d: deadzone(clamp(d), 0.07) };
 }
@@ -802,7 +802,7 @@ function render(signals, states, dims) {
       <div class="contrib">from: ${s.contributors.join(", ")} · evidence: <span class="e-${s.evid}">${s.evid}</span></div>
       ${s.caveats.length ? `<div class="caveat">⚠ ${s.caveats[0]}</div>` : ''}
     </div>`).join("")
-    : '<div class="caveat">Insufficient evidence — no state above threshold.</div>';
+    : '<div class="caveat">Insufficient evidence - no state above threshold.</div>';
 
   $("signals").innerHTML = signals.length ? signals.map(s => `
     <div class="sig"><span class="nm">${s.label}</span>
@@ -852,7 +852,7 @@ function drawFace(face) {
   const C = FaceLandmarker;
   // 1) faint full mesh (the dense ~478-point tessellation)
   drawer.drawConnectors(lm, C.FACE_LANDMARKS_TESSELATION, { color: "rgba(120,200,185,0.16)", lineWidth: 0.5 });
-  // 2) every landmark as a small dot — visible density
+  // 2) every landmark as a small dot - visible density
   ctx2d.fillStyle = "rgba(170,235,215,0.55)";
   for (const pt of lm) { ctx2d.beginPath(); ctx2d.arc(pt.x*canvas.width, pt.y*canvas.height, 1.1, 0, 7); ctx2d.fill(); }
   // 3) highlight expression-relevant contours
@@ -888,7 +888,7 @@ const FALLBACK_KB = { signals: [
   {id:"face_jaw_jut",label:"Jaw thrust (AU29)",inference_reliability:2,interpretations:[{state:"tension / defiance",prior_confidence:0.3,evidence:"weak",caveats:"Also bite alignment/habit."}]},
   {id:"face_cheek_puff",label:"Cheek puff",inference_reliability:2,interpretations:[{state:"exasperation / relief (sigh)",prior_confidence:0.3,evidence:"weak",caveats:"Also blowing/exertion."}]},
   {id:"face_blink_rate",label:"Elevated blink rate (AU45)",inference_reliability:2,interpretations:[{state:"elevated_arousal / stress",prior_confidence:0.3,evidence:"weak",caveats:"Dry eyes, screens, contacts raise blink too. Very low rate = concentration."}]},
-  {id:"physio_arousal",label:"Physiological arousal (rPPG heart rate)",inference_reliability:3,interpretations:[{state:"elevated_arousal / stress",prior_confidence:0.4,evidence:"moderate",caveats:"Physiological, harder to fake — but webcam rPPG is noisy (motion/light/exertion). Arousal != valence."}]},
+  {id:"physio_arousal",label:"Physiological arousal (rPPG heart rate)",inference_reliability:3,interpretations:[{state:"elevated_arousal / stress",prior_confidence:0.4,evidence:"moderate",caveats:"Physiological, harder to fake - but webcam rPPG is noisy (motion/light/exertion). Arousal != valence."}]},
   {id:"emotion_happiness",label:"Happiness prototype (AU6+12)",inference_reliability:4,interpretations:[{state:"happiness",prior_confidence:0.7,evidence:"moderate",prototype:true,caveats:"Constellation is stronger than single AUs, but can still be posed."}]},
   {id:"emotion_sadness",label:"Sadness prototype (AU1+4+15+17)",inference_reliability:3,interpretations:[{state:"sadness",prior_confidence:0.6,evidence:"moderate",prototype:true,caveats:"Brief displays; corroborate with voice/posture."}]},
   {id:"emotion_surprise",label:"Surprise prototype (AU1+2+5+26)",inference_reliability:3,interpretations:[{state:"surprise",prior_confidence:0.6,evidence:"moderate",prototype:true,caveats:"Very brief; can blend into fear."}]},
@@ -899,7 +899,7 @@ const FALLBACK_KB = { signals: [
   {id:"gaze_aversion",label:"Gaze aversion",inference_reliability:2,interpretations:[{state:"cognitive_load / thinking",prior_confidence:0.3,evidence:"moderate",caveats:"Normal during recall; not evasive; culturally varying."}]},
   {id:"regulator_head_nod",label:"Head nod",inference_reliability:3,interpretations:[{state:"agreement / backchannel",prior_confidence:0.5,evidence:"moderate",caveats:"May be polite continuer, not true agreement."}]},
   {id:"posture_lean_forward",label:"Forward lean",inference_reliability:3,interpretations:[{state:"engagement / interest",prior_confidence:0.45,evidence:"moderate",caveats:"Also hearing difficulty/aggression."}]},
-  {id:"posture_closed_arms",label:"Arms crossed",inference_reliability:1,interpretations:[{state:"defensiveness / discomfort",prior_confidence:0.2,evidence:"weak",caveats:"MYTH risk — often just cold or habitual."}]},
+  {id:"posture_closed_arms",label:"Arms crossed",inference_reliability:1,interpretations:[{state:"defensiveness / discomfort",prior_confidence:0.2,evidence:"weak",caveats:"MYTH risk - often just cold or habitual."}]},
   {id:"adaptor_self_touch_face",label:"Hand-to-face self-touch",inference_reliability:1,interpretations:[{state:"anxiety / arousal",prior_confidence:0.2,evidence:"weak",caveats:"Rises with general arousal, NOT specifically lying (DePaulo 2003)."}]},
   {id:"posture_lean_back",label:"Backward lean",inference_reliability:2,interpretations:[{state:"disengagement / skepticism",prior_confidence:0.3,evidence:"weak",caveats:"Also relaxation or comfort. Context decides."}]},
   {id:"posture_ventral_denial",label:"Ventral denial (torso turned away)",inference_reliability:3,interpretations:[{state:"discomfort / withdrawal",prior_confidence:0.4,evidence:"moderate",caveats:"Navarro: we orient our front toward what we favor. Also caused by shifting or addressing someone else."}]},
@@ -910,7 +910,7 @@ const FALLBACK_KB = { signals: [
   {id:"adaptor_hand_to_neck",label:"Hand to neck/nape",inference_reliability:2,interpretations:[{state:"self_soothing / stress",prior_confidence:0.3,evidence:"weak",caveats:"Comfort gesture; rises with arousal generally, not deception."}]},
   {id:"body_fidget",label:"Fidget / restless hand motion",inference_reliability:2,interpretations:[{state:"restlessness / heightened_arousal",prior_confidence:0.3,evidence:"weak",caveats:"Boredom, energy, or habit too. Not a lie cue."}]},
   {id:"gesture_open_palm",label:"Open palm(s)",inference_reliability:2,interpretations:[{state:"openness / candor",prior_confidence:0.3,evidence:"weak",caveats:"Cultural/illustrative; weak standalone."}]},
-  {id:"gesture_hands_together",label:"Hands together / steepled",inference_reliability:2,interpretations:[{state:"contemplation / anxiety (ambiguous)",prior_confidence:0.25,evidence:"weak",caveats:"Steepling=confidence vs clasping=tension — needs finer detail."}]},
+  {id:"gesture_hands_together",label:"Hands together / steepled",inference_reliability:2,interpretations:[{state:"contemplation / anxiety (ambiguous)",prior_confidence:0.25,evidence:"weak",caveats:"Steepling=confidence vs clasping=tension - needs finer detail."}]},
   {id:"gesture_pointing",label:"Pointing / index extension",inference_reliability:3,interpretations:[{state:"emphasis / assertion",prior_confidence:0.4,evidence:"moderate",caveats:"Illustrator; can read as aggressive in some cultures."}]}
 ], constructs: {
   engagement:{label:"Engagement / Interest",positive:{posture_lean_forward:1.0,regulator_head_nod:0.8,regulator_head_tilt:0.6,gesture_open_palm:0.5,face_brow_raise:0.4,prosody_pitch_rise:0.5},negative:{posture_lean_back:0.8,gaze_aversion:0.6,posture_closed_arms:0.4,body_fidget:0.3,posture_ventral_denial:0.6},reliability:4,min_cues:2,evidence:"Thin-slice behavior predicts engagement at r≈.39 (Ambady & Rosenthal 1992); ventral fronting signals comfort (Navarro 2008)"},
@@ -941,7 +941,7 @@ $("facs").addEventListener("change", async (e) => {
       backendOn = true; $("backendStat").textContent = "FACS: on";
     } catch (err) {
       e.target.checked = false; backendOn = false;
-      $("backendStat").textContent = "FACS: unreachable — start backend on :8001";
+      $("backendStat").textContent = "FACS: unreachable - start backend on :8001";
     }
   } else { backendOn = false; backendEmotions = null; $("backendStat").textContent = "FACS: off"; }
 });
