@@ -109,6 +109,43 @@
 
   .e-strong{color:var(--good)} .e-moderate{color:var(--accent)} .e-weak{color:var(--warn)} .e-folklore{color:var(--bad)}
 
+  /* practice / session UI */
+  .prow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .ptoggles{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+  #scenario{flex:1;min-width:140px}
+  #sessTimer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent)}
+  #promptBox{margin-top:12px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  #promptText{font-size:15px;margin-bottom:10px;line-height:1.4}
+  button.rec{background:var(--bad);color:#fff}
+  button.rec:hover{background:#ff7470}
+  /* nudge toast */
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:120;
+    background:var(--card2);border:1px solid var(--accent);color:var(--txt);padding:12px 16px;
+    border-radius:14px;font-size:13px;max-width:min(92vw,420px);box-shadow:0 12px 34px rgba(0,0,0,.45)}
+  .toast[hidden]{display:none}
+  /* report modal */
+  .modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.6);padding:16px}
+  .modal[hidden]{display:none}
+  .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:600px;
+    width:100%;max-height:92vh;overflow:auto;padding:20px}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .modal-head h2{margin:0;font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--txt)}
+  .modal-foot{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .chartwrap{height:180px;margin:12px 0 4px}
+  canvas.chart{width:100%;height:100%;display:block}
+  .legend-row{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin:6px 0 4px}
+  .legend-row i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+  .rstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  @media(max-width:480px){ .rstats{grid-template-columns:repeat(2,1fr)} }
+  .rstat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center}
+  .rstat b{display:block;font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+  .rstat span{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+  .wgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  @media(max-width:480px){ .wgrid{grid-template-columns:1fr} }
+  .wbox h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 6px}
+  .wbox ul{margin:0;padding-left:18px} .wbox li{font-size:13px;margin:4px 0}
+
   @media(prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 </head>
@@ -148,6 +185,25 @@
   </div>
 
   <div>
+    <div class="panel" id="practicePanel" style="margin-bottom:16px">
+      <h2>Practice <a href="./progress.html" class="pill" style="float:right"><i class="ph ph-chart-line"></i> Progress</a></h2>
+      <div class="prow">
+        <select id="scenario" aria-label="Practice scenario"></select>
+        <button id="sessBtn"><i class="ph ph-record-fill"></i> Start session</button>
+        <span id="sessTimer" hidden>0:00</span>
+      </div>
+      <div id="scenarioBlurb" class="caveat" style="margin-top:8px"></div>
+      <div class="ptoggles">
+        <label class="legend"><input type="checkbox" id="nudgeToggle" checked> Real-time nudges</label>
+        <label class="legend"><input type="checkbox" id="speechToggle"> Speech coaching</label>
+      </div>
+      <div id="speechNote" class="caveat" hidden style="margin-top:6px">Speech coaching uses your browser's speech recognition, which may process audio in the cloud. Everything else stays on your device.</div>
+      <div id="promptBox" hidden>
+        <div id="promptText"></div>
+        <button id="nextPrompt" class="sec">Next prompt</button>
+      </div>
+    </div>
+
     <div class="panel" style="margin-bottom:16px">
       <h2>Coach insight</h2>
       <div id="coach">Start the camera to begin.</div>
@@ -169,7 +225,24 @@
   </div>
 </div>
 
+<div id="nudge" class="toast" hidden></div>
+
+<div id="reportModal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Session report</h2>
+      <button id="reportClose" class="iconbtn" type="button" aria-label="Close report"><i class="ph ph-x"></i></button>
+    </div>
+    <div id="reportBody"></div>
+    <div class="modal-foot">
+      <button id="reportProgress" type="button"><i class="ph ph-chart-line"></i> View progress</button>
+      <button id="reportDone" class="sec" type="button">Done</button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="./app.js"></script>
+<script type="module" src="./session-ui.js"></script>
 <script src="../brand.js"></script>
 </body>
 </html>

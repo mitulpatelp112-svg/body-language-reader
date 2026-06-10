@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Progress - Presence</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="../site.webmanifest" />
+<meta name="theme-color" content="#0b0e12" />
+<script>(function(){try{var t=localStorage.getItem('presence-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}})();</script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --bg:#0b0e12; --bg2:#0e1218; --panel:#141a21; --card2:#171e26;
+    --line:#232c37; --txt:#e8eef5; --mut:#94a1b2; --faint:#5c6776;
+    --good:#5fe0c0; --warn:#d8a23a; --bad:#f0625f;
+    --accent:#45d3ad; --accent-soft:rgba(69,211,173,.13); --accent-ink:#06130e; --r:16px;
+    --header-bg:rgba(11,14,18,.8);
+  }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa; --bg2:#edf1f5; --panel:#ffffff; --card2:#f6f8fb;
+    --line:#e1e6ec; --txt:#0d1117; --mut:#586273; --faint:#8a94a3;
+    --good:#0a8f6e; --warn:#9a6a12; --bad:#c2403c;
+    --accent:#0a8f6e; --accent-soft:rgba(10,143,110,.10); --accent-ink:#ffffff;
+    --header-bg:rgba(255,255,255,.82);
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.5}
+  a{color:var(--accent);text-decoration:none}
+  header{display:flex;gap:14px;align-items:center;padding:13px 20px;border-bottom:1px solid var(--line);
+    background:var(--header-bg);backdrop-filter:blur(12px)}
+  header h1{font-size:16px;margin:0;font-weight:600;display:flex;align-items:center;gap:9px}
+  header h1 i{color:var(--accent);font-size:19px}
+  a.pill{font-size:12px;color:var(--accent);border:1px solid rgba(69,211,173,.35);padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:7px}
+  a.pill.ml{margin-left:auto}
+  .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;
+    background:transparent;border:1px solid var(--line);cursor:pointer;font-size:16px} .iconbtn i{color:var(--accent)}
+  .wrap{max-width:880px;margin:0 auto;padding:20px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px}
+  .panel h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 14px;font-weight:600}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:560px){ .summary{grid-template-columns:repeat(2,1fr)} }
+  .scard{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .scard b{display:block;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+  .scard span{font-size:11px;color:var(--mut)}
+  .chartwrap{height:200px} canvas.chart{width:100%;height:100%;display:block}
+  .legend-row{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin-top:8px}
+  .legend-row i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  th{color:var(--mut);font-weight:600;background:var(--bg2);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  .delbtn{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:4px 10px;cursor:pointer;font-size:12px}
+  .delbtn:hover{border-color:var(--bad);color:var(--bad)}
+  .up{color:var(--good)} .down{color:var(--bad)}
+  .empty{color:var(--mut);text-align:center;padding:30px}
+  .cmp td:first-child{color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1><i class="ph-fill ph-heartbeat"></i> Progress</h1>
+  <a class="pill ml" href="./index.html"><i class="ph ph-arrow-left"></i> Back to demo</a>
+  <button id="themeToggle" class="iconbtn" type="button" aria-label="Toggle theme"></button>
+</header>
+<div class="wrap">
+  <div class="panel">
+    <h2>Your practice</h2>
+    <div class="summary">
+      <div class="scard"><b id="sStreak">0</b><span>day streak</span></div>
+      <div class="scard"><b id="sCount">0</b><span>sessions</span></div>
+      <div class="scard"><b id="sTime">0m</b><span>total practice</span></div>
+      <div class="scard"><b id="sEng">0%</b><span>avg engagement</span></div>
+    </div>
+  </div>
+
+  <div class="panel" id="trendPanel" hidden>
+    <h2>Trend across sessions</h2>
+    <div class="chartwrap"><canvas class="chart" id="trendChart"></canvas></div>
+    <div class="legend-row"><span><i style="background:var(--accent)"></i>Engagement</span><span><i style="background:var(--warn)"></i>Fillers / min</span></div>
+  </div>
+
+  <div class="panel" id="comparePanel" hidden>
+    <h2>Compare your last two takes</h2>
+    <table class="cmp"><tbody id="compareBody"></tbody></table>
+  </div>
+
+  <div class="panel">
+    <h2>History</h2>
+    <div id="history"></div>
+  </div>
+</div>
+<script type="module" src="./progress.js"></script>
+<script src="../brand.js"></script>
+</body>
+</html>

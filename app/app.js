@@ -747,18 +747,18 @@ function updateQualityUI(qa) {
 // ---------- Coach reasoning (on-device; optional LLM backend = backend/explain.py) ----------
 // Self-coaching framing (the chosen product lane): actionable feedback on YOUR OWN presence.
 const COACH = {
-  "Engagement / Interest": "Strong engagement — you're leaning in and tracking. Keep this energy.",
+  "Engagement / Interest": "Strong engagement. You're leaning in and tracking. Keep this energy.",
   "Disengagement / Withdrawal": "Reading as pulled-back. Lean in, uncross, and re-engage eye contact.",
   "Discomfort / Anxiety": "Signs of tension. Slow your pace, drop your shoulders, steady your hands.",
   "Confidence / Dominance": "Confident, expansive presence. Keep it warm so it doesn't overpower.",
-  "Rapport / Openness": "Warm and open — this is what builds rapport. Nice.",
-  "happiness": "Positive affect reads clearly.", "sadness": "A low/heavy read — breathe and reset.",
-  "anger": "Reads tense/hard — soften the brow and jaw.", "surprise": "Big reaction registered.",
+  "Rapport / Openness": "Warm and open. This is what builds rapport. Nice.",
+  "happiness": "Positive affect reads clearly.", "sadness": "A low, heavy read. Breathe and reset.",
+  "anger": "Reads tense. Soften the brow and jaw.", "surprise": "Big reaction registered.",
 };
 function generateInsight(states, dims) {
-  if (frameQ < 0.4) return "Tracking too low for a read — face the camera in good light.";
+  if (frameQ < 0.4) return "Tracking too low for a read. Face the camera in good light.";
   const top = states.find(s => !s.weak) || states[0];
-  if (!top || top.p < 0.25) return "Neutral / steady — no strong signal right now.";
+  if (!top || top.p < 0.25) return "Neutral and steady. No strong signal right now.";
   let line = COACH[top.state] || `Reading: ${top.state}.`;
   const drivers = (top.contributors || []).slice(0, 3).join(", ");
   if (drivers) line += `  ·  cues: ${drivers}`;
@@ -774,6 +774,15 @@ function render(signals, states, dims) {
   const vit = $("vitals");
   if (vit) vit.textContent = rppg.quality > 0.3 ? `♥ ~${Math.round(rppg.hr)} bpm (rPPG${prosody.voiced ? " · 🎤 voice A/D/V" : ""})`
                                                 : (prosody.voiced ? "🎤 voice A/D/V active" : "");
+
+  // publish the current read so the session recorder (session.js) can sample it
+  window.PRESENCE = {
+    ts: Date.now(), running, frameQ,
+    v: dims.v, a: dims.a, d: dims.d,
+    voiced: prosody.voiced, hr: rppg.hr, hrQuality: rppg.quality,
+    states: states.map(s => ({ state: s.state, p: s.p, weak: s.weak })),
+    coach: coach ? coach.textContent : ""
+  };
 
   // precision: commit to a primary read only when confident AND clearly ahead of #2 (else abstain)
   const prim = $("primary");

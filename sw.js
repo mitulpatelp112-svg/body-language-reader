@@ -1,11 +1,13 @@
 // Presence service worker - makes the app installable + offline-capable.
 // Cache-first for the app shell, runtime-cache for everything else (incl. CDN models).
-const VERSION = "presence-v1";
+const VERSION = "presence-v2";
 const SHELL = [
   "./", "index.html", "brand.js", "favicon.svg", "site.webmanifest",
   "assets/og.png", "assets/icon-512.png", "assets/apple-touch-icon.png",
   "app/", "app/index.html", "app/app.js", "app/emotion-core.js",
   "app/model-infer.js", "app/eval.html", "app/eval.js",
+  "app/session.js", "app/session-ui.js", "app/speech.js",
+  "app/scenarios.js", "app/charts.js", "app/progress.html", "app/progress.js",
   "knowledge-base/signals.json",
 ];
 
