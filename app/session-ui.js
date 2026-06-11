@@ -92,3 +92,14 @@ function renderReport(r) {
 $("reportClose").addEventListener("click", () => { $("reportModal").hidden = true; });
 $("reportDone").addEventListener("click", () => { $("reportModal").hidden = true; });
 $("reportProgress").addEventListener("click", () => { location.href = "./progress.html"; });
+
+// ---- Box-breathing exercise (new calm-down feature) ----
+const PHASES = ["Breathe in", "Hold", "Breathe out", "Hold"];
+let breatheT = null, phase = 0;
+$("breatheBtn").addEventListener("click", () => {
+  $("breatheOverlay").hidden = false;
+  phase = 0; $("breatheText").textContent = PHASES[0];
+  clearInterval(breatheT);
+  breatheT = setInterval(() => { phase = (phase + 1) % 4; $("breatheText").textContent = PHASES[phase]; }, 4000);
+});
+$("breatheClose").addEventListener("click", () => { $("breatheOverlay").hidden = true; clearInterval(breatheT); });

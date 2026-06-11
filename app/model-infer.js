@@ -5,6 +5,15 @@
 let MODEL = null;
 
 export async function loadModel(url = "./model.json") {
+  // 1) prefer a model the user trained on THIS device (localStorage)
+  try {
+    const local = localStorage.getItem("presence-model");
+    if (local) {
+      const m = JSON.parse(local);
+      if (m.features && m.classes && m.coef) { MODEL = m; console.log("personal (on-device) model loaded"); return true; }
+    }
+  } catch {}
+  // 2) fall back to a server-trained model.json if present
   try {
     const r = await fetch(url, { cache: "no-store" });
     if (!r.ok) return false;

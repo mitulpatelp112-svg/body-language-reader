@@ -193,9 +193,9 @@
     <nav>
       <a class="brand" href="./"><i class="ph-fill ph-heartbeat"></i> Presence</a>
       <div class="navlinks">
-        <a href="#how">How it works</a>
-        <a href="#science">Science</a>
-        <a href="#privacy">Privacy</a>
+        <a href="#how" data-i18n="n1">How it works</a>
+        <a href="science.html" data-i18n="n2">Science</a>
+        <a href="#privacy" data-i18n="n3">Privacy</a>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <button id="installBtn" class="btn btn-ghost" type="button" hidden><i class="ph ph-download-simple"></i> Install</button>
@@ -211,12 +211,12 @@
   <!-- HERO: asymmetric split. Left copy, right real component preview. -->
   <section class="hero" style="border-top:none">
     <div>
-      <span class="eyebrow"><i class="ph-fill ph-shield-check"></i> On-device. Private by design.</span>
-      <h1>See how you<br>actually come across.</h1>
-      <p class="sub">Presence reads your face, posture, voice, and pulse in real time, then coaches your presence. Nothing leaves your device.</p>
+      <span class="eyebrow"><i class="ph-fill ph-shield-check"></i> <span data-i18n="eyebrow">On-device. Private by design.</span></span>
+      <h1 data-i18n="h1">See how you<br>actually come across.</h1>
+      <p class="sub" data-i18n="sub">Presence reads your face, posture, voice, and pulse in real time, then coaches your presence. Nothing leaves your device.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="app/"><i class="ph ph-video-camera"></i> Open the demo</a>
-        <a class="btn btn-ghost btn-lg" href="#science">See the science</a>
+        <a class="btn btn-primary btn-lg" href="app/"><i class="ph ph-video-camera"></i> <span data-i18n="demo">Open the demo</span></a>
+        <a class="btn btn-ghost btn-lg" href="#science"><span data-i18n="science">See the science</span></a>
       </div>
     </div>
 
@@ -362,10 +362,14 @@
     <a class="brand" href="./"><i class="ph-fill ph-heartbeat"></i> Presence</a>
     <div class="foot-links">
       <a href="#how">How it works</a>
-      <a href="#science">Science</a>
+      <a href="science.html">Science</a>
       <a href="RESEARCH_REPORT.md">Research</a>
       <a href="CITATIONS.md">Citations</a>
       <a href="https://github.com/mitulpatelp112-svg/body-language-reader">GitHub</a>
+      <select id="langSelect" aria-label="Language" style="background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-family:inherit;font-size:13px">
+        <option value="en">English</option><option value="es">Español</option>
+        <option value="fr">Français</option><option value="de">Deutsch</option><option value="hi">हिन्दी</option>
+      </select>
     </div>
   </div>
 </footer>
@@ -378,5 +382,6 @@
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 <script src="brand.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

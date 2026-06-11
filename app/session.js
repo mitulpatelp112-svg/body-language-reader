@@ -23,6 +23,7 @@ function db() {
 async function dbPut(rec) { const d = await db(); return new Promise((res, rej) => { const t = d.transaction("sessions", "readwrite"); t.objectStore("sessions").put(rec); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
 export async function listSessions() { const d = await db(); return new Promise((res) => { const out = []; d.transaction("sessions").objectStore("sessions").openCursor().onsuccess = (e) => { const c = e.target.result; if (c) { out.push(c.value); c.continue(); } else res(out.sort((a, b) => a.startedAt - b.startedAt)); }; }); }
 export async function getSession(id) { const d = await db(); return new Promise((res) => { d.transaction("sessions").objectStore("sessions").get(id).onsuccess = (e) => res(e.target.result); }); }
+export async function saveSession(rec) { return dbPut(rec); }
 export async function deleteSession(id) { const d = await db(); return new Promise((res) => { const t = d.transaction("sessions", "readwrite"); t.objectStore("sessions").delete(id); t.oncomplete = res; }); }
 
 // ---------- audio chime for nudges ----------

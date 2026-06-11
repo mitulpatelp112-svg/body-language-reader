@@ -76,6 +76,26 @@
     </div>
   </div>
 
+  <div class="panel" id="goalPanel">
+    <h2>Weekly goal</h2>
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <svg id="goalRing" width="78" height="78" viewBox="0 0 78 78" aria-hidden="true">
+        <circle cx="39" cy="39" r="32" fill="none" stroke="var(--line)" stroke-width="7"/>
+        <circle id="goalArc" cx="39" cy="39" r="32" fill="none" stroke="var(--accent)" stroke-width="7"
+          stroke-linecap="round" transform="rotate(-90 39 39)" stroke-dasharray="201" stroke-dashoffset="201"/>
+        <text id="goalRingText" x="39" y="44" text-anchor="middle" font-size="17" font-weight="700" fill="var(--txt)">0/3</text>
+      </svg>
+      <div style="flex:1;min-width:180px">
+        <div id="goalLabel" class="mut" style="margin-bottom:8px">Practice sessions this week.</div>
+        <label class="mut" style="font-size:12px">Target
+          <input id="goalInput" type="number" min="1" max="21" value="3"
+            style="width:60px;background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-left:6px;font-family:inherit" />
+          per week
+        </label>
+      </div>
+    </div>
+  </div>
+
   <div class="panel" id="trendPanel" hidden>
     <h2>Trend across sessions</h2>
     <div class="chartwrap"><canvas class="chart" id="trendChart"></canvas></div>
@@ -90,6 +110,17 @@
   <div class="panel">
     <h2>History</h2>
     <div id="history"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Your data</h2>
+    <p class="mut" style="margin:0 0 12px">Everything stays in this browser. Export a backup or move it to another device.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="exportBtn" style="background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer"><i class="ph ph-download-simple"></i> Export</button>
+      <button id="importBtn" style="background:transparent;color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer"><i class="ph ph-upload-simple"></i> Import</button>
+      <input id="importFile" type="file" accept="application/json" hidden />
+      <span id="dataStatus" class="mut" style="align-self:center"></span>
+    </div>
   </div>
 </div>
 <script type="module" src="./progress.js"></script>

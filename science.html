@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The science behind Presence</title>
+<meta name="description" content="Every signal Presence reads, its evidence rating, and the sources behind it. Single cues are weak; constellations are stronger; no lie detection." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<meta name="theme-color" content="#fbfbfa" />
+<meta property="og:title" content="The science behind Presence" />
+<meta property="og:description" content="Every signal, rated by evidence, with sources. Honest about what body language can and cannot tell you." />
+<meta property="og:image" content="https://mitulpatelp112-svg.github.io/body-language-reader/assets/og.png" />
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  /* Editorial / minimalist surface (its own light theme; a document, not the tool). */
+  :root{
+    --bg:#fbfbfa; --surface:#ffffff; --ink:#2f3437; --ink2:#787774; --faint:#9b9a96;
+    --rule:#eaeaea;
+    --g-bg:#edf3ec; --g-fg:#346538; --b-bg:#e1f3fe; --b-fg:#1f6c9f;
+    --y-bg:#fbf3db; --y-fg:#956400; --r-bg:#fdebec; --r-fg:#9f2f2d;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+    --mono:"SF Mono","JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--rule)}
+  .brand{font-family:var(--serif);font-size:20px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .brand i{color:var(--ink)}
+  .navback{font-size:13px;color:var(--ink2);border:1px solid var(--rule);border-radius:6px;padding:7px 12px;text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+  .navback:hover{background:var(--surface)}
+
+  header.hero{padding:72px 0 40px;max-width:760px}
+  h1{font-family:var(--serif);font-size:clamp(34px,6vw,56px);line-height:1.08;letter-spacing:-.03em;margin:0 0 20px;font-weight:600}
+  .lede{font-size:19px;color:var(--ink2);max-width:62ch}
+  .kpis{display:flex;gap:32px;flex-wrap:wrap;margin-top:30px;font-family:var(--mono)}
+  .kpi b{display:block;font-size:26px;color:var(--ink);font-weight:600}
+  .kpi span{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
+
+  section{padding:48px 0;border-top:1px solid var(--rule)}
+  h2{font-family:var(--serif);font-size:30px;letter-spacing:-.02em;margin:0 0 8px;font-weight:600}
+  .sub{color:var(--ink2);margin:0 0 28px;max-width:60ch}
+
+  .bento{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:680px){ .bento{grid-template-columns:1fr} }
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:24px;
+    transition:box-shadow .2s ease,transform .2s ease}
+  .card:hover{box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .card h3{font-family:var(--serif);font-size:20px;margin:0 0 6px;font-weight:600}
+  .card p{margin:0;color:var(--ink2);font-size:14.5px}
+  .card .src{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .votes{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+
+  .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border-radius:9999px;padding:3px 9px;font-weight:600}
+  .t-strong{background:var(--g-bg);color:var(--g-fg)} .t-moderate{background:var(--b-bg);color:var(--b-fg)}
+  .t-weak{background:var(--y-bg);color:var(--y-fg)} .t-folklore{background:var(--r-bg);color:var(--r-fg)}
+  .t-plain{background:#f1f0ee;color:var(--ink2)}
+
+  .modblock{margin-bottom:30px}
+  .modhead{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);
+    padding-bottom:8px;border-bottom:1px solid var(--rule);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .sig{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:start;padding:14px 0;border-bottom:1px solid var(--rule)}
+  .sig:last-child{border-bottom:none}
+  .sig .nm{font-weight:600;font-size:15px}
+  .sig .ob{color:var(--ink2);font-size:13.5px;grid-column:1/2}
+  .sig .cav{color:var(--faint);font-size:12.5px;grid-column:1/2;margin-top:2px}
+  .sig .meta{justify-self:end;text-align:right;white-space:nowrap}
+  .rel{font-family:var(--mono);font-size:11px;color:var(--faint);display:block;margin-top:6px}
+
+  .note{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--y-fg);border-radius:10px;padding:20px 22px}
+  .note h3{font-family:var(--serif);font-size:18px;margin:0 0 8px}
+  .note p{margin:0;color:var(--ink2);font-size:14.5px}
+  footer{padding:40px 0;border-top:1px solid var(--rule);color:var(--ink2);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer a{color:var(--ink2);text-decoration:none}
+
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+  :focus-visible{outline:2px solid var(--b-fg);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){ .reveal{opacity:1;transform:none} *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="./"><i class="ph-fill ph-heartbeat"></i> Presence</a>
+    <a class="navback" href="app/"><i class="ph ph-arrow-left"></i> Open the demo</a>
+  </nav>
+
+  <header class="hero">
+    <h1>The science behind the read.</h1>
+    <p class="lede">Presence does not guess emotions from a single twitch. Every read is built from many measured signals, each rated by how much the evidence actually supports it. Here is the whole map, with sources.</p>
+    <div class="kpis">
+      <div class="kpi"><b id="kSignals">-</b><span>signals</span></div>
+      <div class="kpi"><b id="kConstructs">-</b><span>constructs</span></div>
+      <div class="kpi"><b>0.55</b><span>single-cue ceiling</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Reads built from constellations</h2>
+    <p class="sub">A construct only shows when several independent signals agree. That is the scientifically supported way to read behaviour, and where confidence is earned.</p>
+    <div class="bento" id="constructs"></div>
+  </section>
+
+  <section>
+    <h2>Every signal, rated</h2>
+    <p class="sub">Grouped by what does the measuring. The tag is the evidence strength; the number is how much to trust the meaning, out of five.</p>
+    <div id="signals"></div>
+  </section>
+
+  <section>
+    <div class="note">
+      <h3>What it will not do</h3>
+      <p>No lie or intent detection. The research does not support reading deception from nonverbal behaviour (observers land near 55 percent, barely above chance). Facial expressions are also variable across people and cultures. Presence surfaces probabilities with caveats, never verdicts, and everything runs on your device.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Presence. Decision-support, not a verdict.</span>
+    <span><a href="RESEARCH_REPORT.md">Research report</a> &nbsp; <a href="CITATIONS.md">Citations</a> &nbsp; <a href="https://github.com/mitulpatelp112-svg/body-language-reader">GitHub</a></span>
+  </footer>
+</div>
+<script type="module" src="app/science.js"></script>
+</body>
+</html>

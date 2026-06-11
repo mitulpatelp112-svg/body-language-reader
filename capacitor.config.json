@@ -1,0 +1,10 @@
+{
+  "appId": "com.presence.coach",
+  "appName": "Presence",
+  "webDir": ".",
+  "server": { "androidScheme": "https" },
+  "ios": { "contentInset": "always" },
+  "plugins": {
+    "Camera": { "permissions": ["camera"] }
+  }
+}

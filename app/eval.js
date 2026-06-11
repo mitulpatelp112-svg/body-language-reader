@@ -1,14 +1,31 @@
-// Accuracy eval harness — measures the emotion-prototype layer under guided posing.
+// Accuracy eval harness - measures the emotion-prototype layer under guided posing.
 import { FaceLandmarker, FilesetResolver }
   from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 import { EMOTIONS, scoreEmotions, topPrediction } from "./emotion-core.js";
+import { trainModel } from "./train-browser.js";
+
+// Persistent training data across eval runs (feature 7: train your own model on-device)
+const TRAIN_KEY = "presence-train-data";
+function loadTrainData() { try { return JSON.parse(localStorage.getItem(TRAIN_KEY) || "[]"); } catch { return []; } }
+function appendTrainData(rows) {
+  const all = loadTrainData().concat(rows).slice(-4000);   // cap memory
+  localStorage.setItem(TRAIN_KEY, JSON.stringify(all));
+  return all.length;
+}
+function refreshModelStatus() {
+  const total = loadTrainData().length;
+  const hasModel = !!localStorage.getItem("presence-model");
+  const el = $("modelStatus");
+  if (el) el.textContent = `${total} sample${total === 1 ? "" : "s"} collected` + (hasModel ? " · personal model active" : "");
+  if ($("trainBtn")) $("trainBtn").disabled = total < 14;
+}
 
 const $ = (id) => document.getElementById(id);
 const video = $("video");
 const PREP_MS = 3000, CAP_MS = 2000;
 let faceLM, lastT = -1, capturing = false, capCounts = null, capLabel = null;
 const trials = [];          // {true, pred}
-const dataset = [];         // {label, blendshapes:{...}} — training samples for a future model
+const dataset = [];         // {label, blendshapes:{...}} - training samples for a future model
 
 async function init() {
   $("status").textContent = "loading model…";
@@ -71,8 +88,10 @@ async function runEval() {
   }
   showCue(`<div class="big">Done</div><div class="sub">See results →</div>`);
   computeResults();
+  const total = appendTrainData(dataset);   // persist this run's samples for on-device training
   $("start").disabled = false; $("dl").disabled = false; $("dlData").disabled = false;
-  $("status").textContent = `complete · ${dataset.length} samples logged`;
+  $("status").textContent = `complete · ${dataset.length} samples logged (${total} total)`;
+  refreshModelStatus();
 }
 
 function computeResults() {
@@ -137,3 +156,26 @@ $("start").addEventListener("click", async () => {
 });
 $("dl").addEventListener("click", downloadCSV);
 $("dlData").addEventListener("click", downloadDataset);
+
+// ---- Feature 7: train a personal model on-device, used live by the app ----
+$("trainBtn")?.addEventListener("click", () => {
+  const data = loadTrainData();
+  $("modelStatus").textContent = "training on-device...";
+  setTimeout(() => {
+    const res = trainModel(data);
+    if (!res.ok) { $("modelStatus").textContent = res.reason; return; }
+    localStorage.setItem("presence-model", JSON.stringify(res.model));
+    $("modelStatus").textContent = `Personal model trained: ${(res.acc * 100).toFixed(0)}% holdout accuracy on ${res.classes.length} expressions (${res.n} samples). The live app now uses it.`;
+    $("clearModel").hidden = false;
+  }, 30);
+});
+$("clearModel")?.addEventListener("click", () => {
+  localStorage.removeItem("presence-model");
+  $("clearModel").hidden = true; refreshModelStatus();
+  $("modelStatus").textContent = "Personal model cleared. App reverted to the built-in classifier.";
+});
+$("clearData")?.addEventListener("click", () => {
+  if (confirm("Delete all collected training samples on this device?")) { localStorage.removeItem(TRAIN_KEY); refreshModelStatus(); }
+});
+refreshModelStatus();
+if (localStorage.getItem("presence-model") && $("clearModel")) $("clearModel").hidden = false;

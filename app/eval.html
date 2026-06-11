@@ -118,13 +118,24 @@
       <h2>Result</h2>
       <div id="result"><span class="mut">Run the eval to see accuracy and the confusion matrix.</span></div>
     </div>
+    <div class="panel" style="margin-bottom:16px">
+      <h2>Train on this device</h2>
+      <p class="mut" style="margin-bottom:12px">Each eval run logs your own labelled expressions. Train a personal classifier from them, on-device, and the live demo will use it instead of the built-in priors. Nothing is uploaded.</p>
+      <div class="controls">
+        <button id="trainBtn" disabled><i class="ph ph-brain"></i> Train personal model</button>
+        <button id="clearModel" class="sec" hidden>Use built-in</button>
+        <button id="clearData" class="sec">Clear data</button>
+      </div>
+      <div id="modelStatus" class="mut" style="margin-top:10px">0 samples collected</div>
+    </div>
+
     <div class="panel">
       <h2>How this works</h2>
       <p class="mut">For each emotion you get a 3s prep cue, then a 2s capture window. The model's most
       frequent prediction in that window is the prediction for that trial. Accuracy is correct over total;
       the confusion matrix shows where it confuses one emotion for another (fear and surprise is the classic pair).</p>
       <p class="mut">This measures the <b>emotion-prototype layer</b> (AU constellations) under deliberate
-      posing, a controlled baseline rather than in-the-wild accuracy. Extend it later with recorded labeled clips.</p>
+      posing, a controlled baseline rather than in-the-wild accuracy. Train a personal model above to adapt it to your face.</p>
     </div>
   </div>
 </div>

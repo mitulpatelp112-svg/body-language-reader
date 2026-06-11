@@ -275,21 +275,32 @@ function computeHR(t) {
 
 function startCalibration() { calibrating = 90; baseline = null; statusEl.textContent = "calibrating baseline… hold neutral"; }
 
-// ---------- Per-person profiles (persist baseline across sessions) ----------
-const PROFILE_KEY = "blr_profile_default";
+// ---------- Per-person profiles (named, multi-user; persists baseline) ----------
+const PROFILES_KEY = "presence-profiles";
+const loadProfiles = () => { try { return JSON.parse(localStorage.getItem(PROFILES_KEY) || "{}"); } catch { return {}; } };
+function refreshProfileSelect() {
+  const sel = $("profSelect"); if (!sel) return;
+  const names = Object.keys(loadProfiles());
+  sel.innerHTML = `<option value="">Profiles…</option>` + names.map((n) => `<option value="${n}">${n}</option>`).join("");
+}
 function saveProfile() {
-  if (!baseline) { $("backendStat").textContent = "no baseline yet - calibrate first"; return; }
-  localStorage.setItem(PROFILE_KEY, JSON.stringify({ baseline, pitchBase, energyBase, ts: Date.now() }));
-  statusEl.textContent = "profile saved";
+  if (!baseline) { statusEl.textContent = "no baseline yet, calibrate first"; return; }
+  const name = ($("profName")?.value || "").trim() || (prompt("Name this profile:") || "").trim();
+  if (!name) { statusEl.textContent = "name the profile to save"; return; }
+  const all = loadProfiles();
+  all[name] = { baseline, pitchBase, energyBase, ts: Date.now() };
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(all));
+  if ($("profName")) $("profName").value = "";
+  refreshProfileSelect();
+  statusEl.textContent = `profile "${name}" saved`;
 }
 function loadProfile() {
-  const raw = localStorage.getItem(PROFILE_KEY);
-  if (!raw) { statusEl.textContent = "no saved profile"; return; }
-  try {
-    const p = JSON.parse(raw);
-    baseline = p.baseline; pitchBase = p.pitchBase ?? null; energyBase = p.energyBase ?? null;
-    calibrating = 0; statusEl.textContent = "profile loaded - skipping calibration";
-  } catch { statusEl.textContent = "profile corrupt"; }
+  const all = loadProfiles();
+  const name = $("profSelect")?.value || Object.keys(all)[0];
+  const p = name && all[name];
+  if (!p) { statusEl.textContent = "no saved profile"; return; }
+  baseline = p.baseline; pitchBase = p.pitchBase ?? null; energyBase = p.energyBase ?? null;
+  calibrating = 0; statusEl.textContent = `profile "${name}" loaded, skipping calibration`;
 }
 
 // ---------- Main loop ----------
@@ -933,6 +944,7 @@ $("start").addEventListener("click", async () => {
 $("calib").addEventListener("click", startCalibration);
 $("saveProf").addEventListener("click", saveProfile);
 $("loadProf").addEventListener("click", loadProfile);
+refreshProfileSelect();
 $("facs").addEventListener("change", async (e) => {
   if (e.target.checked) {
     try {

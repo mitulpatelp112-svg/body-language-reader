@@ -1,5 +1,5 @@
 // Progress page: streak, totals, trend chart, two-take compare, history list.
-import { listSessions, deleteSession, computeStreak } from "./session.js";
+import { listSessions, deleteSession, saveSession, computeStreak } from "./session.js";
 import { lineChart } from "./charts.js";
 import { scenarioById } from "./scenarios.js";
 
@@ -72,5 +72,55 @@ async function render() {
   $("history").innerHTML = `<table><tr><th>Date</th><th>Length</th><th>Engage</th><th>Fillers</th><th></th></tr>${rows}</table>`;
   $("history").querySelectorAll(".delbtn").forEach((b) =>
     b.addEventListener("click", async () => { await deleteSession(b.dataset.id); render(); }));
+
+  updateGoal(sessions);
 }
+
+// ---- Weekly goal ring (new feature) ----
+function updateGoal(sessions) {
+  const goal = Math.max(1, +(localStorage.getItem("presence-goal") || 3));
+  const weekAgo = Date.now() - 7 * 864e5;
+  const thisWeek = sessions.filter((s) => s.startedAt >= weekAgo).length;
+  const frac = Math.min(1, thisWeek / goal);
+  const C = 201;
+  $("goalArc").setAttribute("stroke-dashoffset", String(Math.round(C * (1 - frac))));
+  $("goalRingText").textContent = `${thisWeek}/${goal}`;
+  $("goalInput").value = goal;
+  $("goalLabel").textContent = thisWeek >= goal ? "Goal reached this week. Nice work." : `${goal - thisWeek} more to hit your weekly goal.`;
+}
+$("goalInput").addEventListener("change", (e) => {
+  localStorage.setItem("presence-goal", String(Math.max(1, Math.min(21, +e.target.value || 3))));
+  render();
+});
+
+// ---- Data export / import (new feature; privacy-friendly portability) ----
+$("exportBtn").addEventListener("click", async () => {
+  const data = {
+    app: "presence", exportedAt: new Date().toISOString(),
+    sessions: await listSessions(),
+    profiles: JSON.parse(localStorage.getItem("presence-profiles") || "{}"),
+    goal: localStorage.getItem("presence-goal") || "3",
+    model: localStorage.getItem("presence-model") || null,
+  };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+  a.download = `presence-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+  $("dataStatus").textContent = `exported ${data.sessions.length} sessions`;
+});
+$("importBtn").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== "presence") throw new Error("not a Presence backup");
+    for (const s of data.sessions || []) await saveSession(s);
+    if (data.profiles) localStorage.setItem("presence-profiles", JSON.stringify(data.profiles));
+    if (data.goal) localStorage.setItem("presence-goal", data.goal);
+    if (data.model) localStorage.setItem("presence-model", data.model);
+    $("dataStatus").textContent = `imported ${(data.sessions || []).length} sessions`;
+    render();
+  } catch (err) { $("dataStatus").textContent = "import failed: " + err.message; }
+  e.target.value = "";
+});
+
 render();
