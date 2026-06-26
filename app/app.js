@@ -741,7 +741,7 @@ function renderSmoothed() {
                   .filter(s => s.p > 0.02).sort((a,b)=>b.p-a.p);
   // Lead with corroborated (confident) reads; only fall back to hedged single-cue states if none.
   const confident = states.filter(s => !s.weak);
-  states = (confident.length ? confident : states).slice(0, 6);
+  states = (confident.length ? confident : states).slice(0, 5);
   const signals = [...SMOOTH.signals.entries()].map(([id,v]) => ({ id, ...v }))
                   .filter(s => s.a > 0.15).sort((a,b)=>b.a-a.a).slice(0, 10);
   render(signals, states, dims);
@@ -806,14 +806,13 @@ function render(signals, states, dims) {
   }
 
   $("states").innerHTML = states.length ? states.map(s => `
-    <div class="state">
+    <div class="state" title="${(s.caveats[0] || '').replace(/"/g, '&quot;')}">
       <div class="row"><span>${s.state} ${s.weak ? '<span class="pill e-weak">needs corroboration</span>' : ''}</span>
         <span>${(s.p*100).toFixed(0)}%</span></div>
       <div class="bar"><i style="width:${Math.min(100,s.p*100)}%;${s.weak?'background:var(--warn)':''}"></i></div>
-      <div class="contrib">from: ${s.contributors.join(", ")} · evidence: <span class="e-${s.evid}">${s.evid}</span></div>
-      ${s.caveats.length ? `<div class="caveat">⚠ ${s.caveats[0]}</div>` : ''}
+      <div class="contrib">${s.contributors.slice(0,3).join(", ")} · <span class="e-${s.evid}">${s.evid}</span></div>
     </div>`).join("")
-    : '<div class="caveat">Insufficient evidence - no state above threshold.</div>';
+    : '<div class="caveat">Insufficient evidence.</div>';
 
   $("signals").innerHTML = signals.length ? signals.map(s => `
     <div class="sig"><span class="nm">${s.label}</span>
